@@ -1,0 +1,595 @@
+<title>LeadPulse Clinic Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: app shell. Left nav rail (top tabs on phones), content area with summary first, detail below. */
+:root {
+  --bg: #f3f5f3; --surface: #ffffff; --surface-2: #f8faf8; --ink: #141816; --ink-2: #4b524d; --muted: #737a75; --line: #dde2de;
+  --accent: #0f6b5c; --accent-ink: #ffffff; --accent-soft: #e2f0ec;
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --band: #edf0ed;
+  --hot: #d03b3b; --warm: #a86f00; --cold: #5d7392; --good: #0b8a0b;
+  --f-display: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f1211; --surface: #181c1a; --surface-2: #1d221f; --ink: #edf1ee; --ink-2: #b6bdb7; --muted: #8a918b; --line: #2b312d;
+  --accent: #52c3ad; --accent-ink: #0f1211; --accent-soft: #1b2e29; --s1: #3987e5; --s2: #d95926; --s3: #199e70; --band: #1d221f;
+  --hot: #e66767; --warm: #fab219; --cold: #8fa6c6; --good: #3fbf3f; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #0f1211; --surface: #181c1a; --surface-2: #1d221f; --ink: #edf1ee; --ink-2: #b6bdb7; --muted: #8a918b; --line: #2b312d;
+  --accent: #52c3ad; --accent-ink: #0f1211; --accent-soft: #1b2e29; --s1: #3987e5; --s2: #d95926; --s3: #199e70; --band: #1d221f;
+  --hot: #e66767; --warm: #fab219; --cold: #8fa6c6; --good: #3fbf3f; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 14.5px/1.5 var(--f-body); }
+.shell { display: grid; grid-template-columns: 220px minmax(0, 1fr); min-height: 100vh; }
+nav.side { background: var(--surface); border-right: 1px solid var(--line); padding: 18px 12px; display: flex; flex-direction: column; gap: 4px;
+  position: sticky; top: env(safe-area-inset-top, 0px); height: 100vh; }
+.brand { display: flex; gap: 10px; align-items: center; padding: 4px 8px 16px; }
+.logo { width: 30px; height: 30px; border-radius: 8px; background: var(--accent); display: grid; place-items: center; }
+.brand b { font: 800 1.05rem var(--f-display); letter-spacing: -0.01em; }
+.brand span { display: block; font: 0.72rem var(--f-mono); color: var(--muted); }
+nav.side button { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; text-align: left; background: none; border: 0;
+  padding: 9px 10px; border-radius: 8px; font: 600 0.92rem var(--f-body); color: var(--ink-2); cursor: pointer; }
+nav.side button:hover { background: var(--surface-2); color: var(--ink); }
+nav.side button[aria-current="page"] { background: var(--accent-soft); color: var(--ink); }
+nav.side button:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.badge { font: 600 0.7rem var(--f-mono); background: var(--hot); color: #fff; border-radius: 999px; padding: 1px 7px; }
+.side .foot { margin-top: auto; font-size: 0.75rem; color: var(--muted); padding: 8px; border-top: 1px solid var(--line); }
+@media (max-width: 860px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  nav.side { position: static; height: auto; flex-direction: row; overflow-x: auto; padding: 8px 12px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .brand, .side .foot { display: none; }
+  nav.side button { width: auto; white-space: nowrap; }
+}
+
+main { padding-inline: 16px; padding-block: 18px 48px; min-width: 0; }
+@media (min-width: 861px) { main { padding-inline: 28px; } }
+.topbar { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.topbar h1 { font: 800 1.45rem/1.2 var(--f-display); margin: 0; letter-spacing: -0.01em; }
+.topbar .sub { color: var(--ink-2); font-size: 0.88rem; }
+.demo { font: 600 0.7rem var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--warm); border: 1px dashed currentColor; border-radius: 6px; padding: 3px 8px; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+select, input[type="search"] { font: 0.88rem var(--f-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { font: 600 0.8rem var(--f-body); background: var(--surface); color: var(--ink-2); border: 0; padding: 7px 10px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+
+section.view { display: grid; gap: 16px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
+.card h2 { font: 700 1rem/1.3 var(--f-display); margin: 0; }
+.card .hint { color: var(--ink-2); font-size: 0.84rem; margin: 2px 0 10px; }
+.g2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 16px; }
+.g3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 16px; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 4px; }
+.kpi .l { font-size: 0.8rem; color: var(--ink-2); }
+.kpi .v { font: 600 1.55rem/1.1 var(--f-mono); font-variant-numeric: tabular-nums; }
+.kpi .d { font: 0.75rem var(--f-mono); color: var(--muted); }
+.up { color: var(--good); } .down { color: var(--hot); }
+.leak { border-color: var(--hot); }
+.leak .v { color: var(--hot); }
+
+.chart svg { display: block; width: 100%; height: auto; }
+svg text { fill: var(--muted); font: 11px var(--f-mono); }
+svg .grid { stroke: var(--line); }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.8rem; color: var(--ink-2); margin-top: 6px; }
+.legend i { display: inline-block; width: 12px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+.legend i.box { height: 10px; width: 10px; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font: 12px/1.45 var(--f-mono); padding: 7px 9px; border-radius: 6px; z-index: 20; max-width: 260px; }
+
+.tbl { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+th { text-align: left; font: 600 0.7rem var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line); padding: 7px 8px; white-space: nowrap; }
+td { border-bottom: 1px solid var(--line); padding: 9px 8px; vertical-align: middle; }
+tr.click { cursor: pointer; } tr.click:hover td { background: var(--surface-2); }
+.num { text-align: right; font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.mono { font-family: var(--f-mono); font-size: 0.82rem; }
+.small { font-size: 0.78rem; color: var(--muted); }
+.chip { display: inline-flex; align-items: center; gap: 5px; font: 600 0.72rem var(--f-mono); padding: 1px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.t-hot { color: var(--hot); } .t-warm { color: var(--warm); } .t-cold { color: var(--cold); }
+.tag { font: 600 0.7rem var(--f-mono); color: var(--accent); white-space: nowrap; }
+.src { font: 0.75rem var(--f-mono); color: var(--ink-2); background: var(--band); border-radius: 4px; padding: 1px 6px; white-space: nowrap; }
+.btn { font: 600 0.8rem var(--f-body); border-radius: 7px; padding: 6px 10px; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--ink); white-space: nowrap; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn:hover { border-color: var(--accent); }
+
+/* queue */
+.qitem { display: grid; grid-template-columns: 44px minmax(150px, 1.1fr) minmax(130px, 0.8fr) minmax(200px, 1.6fr) auto; gap: 12px; align-items: center;
+  padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.qitem:last-child { border-bottom: 0; }
+.pri { font: 700 0.78rem var(--f-mono); border-radius: 6px; text-align: center; padding: 4px 0; background: var(--band); color: var(--ink-2); }
+.pri.p1 { background: var(--hot); color: #fff; }
+.wait { font: 600 0.8rem var(--f-mono); }
+.wait.late { color: var(--hot); }
+.acts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+@media (max-width: 760px) { .qitem { grid-template-columns: 40px 1fr; } .qitem > :nth-child(n+3) { grid-column: 2; } .acts { justify-content: flex-start; } }
+
+/* kanban */
+.kanban { display: grid; grid-template-columns: repeat(6, minmax(170px, 1fr)); gap: 12px; overflow-x: auto; padding-bottom: 6px; }
+.kcol { background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-width: 170px; }
+.kcol h3 { margin: 0 0 4px; font: 700 0.85rem var(--f-display); display: flex; justify-content: space-between; }
+.kcol .sum { font: 0.72rem var(--f-mono); color: var(--muted); margin-bottom: 8px; }
+.kcard { background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--cold); border-radius: 7px; padding: 8px 9px; margin-bottom: 8px; cursor: pointer; display: grid; gap: 3px; font-size: 0.82rem; }
+.kcard.hot { border-left-color: var(--hot); } .kcard.warm { border-left-color: var(--warm); }
+.kcard:hover { border-color: var(--accent); }
+
+/* profile */
+.phead { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+.avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font: 800 1.2rem var(--f-display); }
+.phead h2 { font: 800 1.3rem var(--f-display); margin: 0; }
+.facts { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.84rem; color: var(--ink-2); }
+.jtabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.jtabs button { font: 600 0.8rem var(--f-body); border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); border-radius: 999px; padding: 4px 12px; cursor: pointer; }
+.jtabs button[aria-pressed="true"] { border-color: var(--accent); color: var(--ink); background: var(--accent-soft); }
+.wf { display: grid; gap: 0; }
+.wrow { display: grid; grid-template-columns: 150px 1fr 70px; gap: 10px; align-items: center; padding: 5px 0; border-top: 1px dashed var(--line); font-size: 0.84rem; }
+.wrow .lbl { display: flex; gap: 6px; align-items: center; min-width: 0; }
+.wrow .lbl span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.track { position: relative; height: 16px; background: var(--band); border-radius: 4px; }
+.track i { position: absolute; top: 3px; height: 10px; border-radius: 3px; min-width: 3px; }
+.wrow .dur { font: 600 0.78rem var(--f-mono); text-align: right; }
+.wrow.slow .dur { color: var(--hot); }
+.chat { display: grid; gap: 8px; max-height: 420px; overflow-y: auto; padding-right: 4px; }
+.bubble { max-width: 80%; padding: 8px 11px; border-radius: 12px; font-size: 0.86rem; display: grid; gap: 2px; }
+.bubble.in { background: var(--surface-2); border: 1px solid var(--line); justify-self: start; border-bottom-left-radius: 4px; }
+.bubble.out { background: var(--accent-soft); justify-self: end; border-bottom-right-radius: 4px; }
+.bubble .meta { font: 0.7rem var(--f-mono); color: var(--muted); }
+.ev { justify-self: center; font: 0.72rem var(--f-mono); color: var(--muted); background: var(--band); border-radius: 999px; padding: 2px 10px; }
+
+/* funnel */
+.frow { display: grid; grid-template-columns: 120px 1fr 170px; gap: 10px; align-items: center; margin: 6px 0; }
+.frow .bar { height: 24px; background: var(--s1); border-radius: 0 4px 4px 0; }
+.frow .stat { font: 0.8rem var(--f-mono); color: var(--ink-2); }
+.frow.worst .stat b { color: var(--hot); }
+.fstep { font: 0.74rem var(--f-mono); color: var(--muted); padding-left: 130px; }
+@media (max-width: 560px) { .frow { grid-template-columns: 90px 1fr; } .frow .stat { grid-column: 2; } .fstep { padding-left: 0; } }
+
+/* integrations */
+.int { display: grid; grid-template-columns: 40px 1fr auto; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); }
+.int:last-child { border-bottom: 0; }
+.ico { width: 36px; height: 36px; border-radius: 9px; display: grid; place-items: center; font: 800 0.8rem var(--f-mono); background: var(--band); color: var(--ink-2); }
+.state { font: 600 0.75rem var(--f-mono); }
+.state.ok { color: var(--good); } .state.off { color: var(--muted); } .state.warn { color: var(--warm); }
+pre.code { margin: 0; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 12px; overflow-x: auto; font: 0.8rem/1.55 var(--f-mono); }
+.kv { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; font-size: 0.88rem; }
+.kv span:nth-child(even) { font-family: var(--f-mono); text-align: right; }
+.toast { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 14px; border-radius: 8px; font-size: 0.86rem; z-index: 30; }
+</style>
+
+<div class="shell">
+  <nav class="side" aria-label="Main">
+    <div class="brand"><div class="logo"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M1 10h4l2-6 4 10 2-4h4" fill="none" stroke="var(--accent-ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div><b>LeadPulse</b><span>working name</span></div></div>
+    <button data-view="overview" aria-current="page">Overview</button>
+    <button data-view="queue">Action queue <span class="badge" id="qBadge">0</span></button>
+    <button data-view="pipeline">Pipeline</button>
+    <button data-view="contacts">Contacts</button>
+    <button data-view="profile">Contact profile</button>
+    <button data-view="bottlenecks">Bottlenecks</button>
+    <button data-view="settings">Sources &amp; rules</button>
+    <div class="foot">Mockup with fake data. Nothing here is real.</div>
+  </nav>
+
+  <main>
+    <div class="topbar">
+      <div><h1 id="vTitle">Overview</h1><div class="sub" id="vSub"></div></div>
+      <div class="controls">
+        <span class="demo">Demo data</span>
+        <select id="clinic" aria-label="Clinic"><option>Glow Aesthetics · Kapitolyo</option><option>Glow Aesthetics · BGC</option></select>
+        <select id="range" aria-label="Date range"><option value="30">Last 30 days</option><option value="14">Last 14 days</option></select>
+      </div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <section class="view" id="overview">
+      <div class="kpis" id="kpis"></div>
+      <div class="g2">
+        <div class="card"><h2>First reply time</h2><p class="hint">Daily median (p50) and worst 10% (p90), log scale. The dashed line marks when the after-hours AI was switched on.</p><div class="chart" id="cFrt"></div>
+          <div class="legend"><span><i style="background:var(--s1)"></i>p50</span><span><i style="background:var(--s2)"></i>p90</span></div></div>
+        <div class="card"><h2>When inquiries arrive</h2><p class="hint">Conversations by hour. Shaded hours are when the clinic is closed.</p><div class="chart" id="cHour"></div>
+          <div class="legend"><span><i class="box" style="background:var(--s1)"></i>answered in time</span><span><i class="box" style="background:var(--s2)"></i>slow or never</span><span><i class="box" style="background:var(--band);border:1px solid var(--line)"></i>closed</span></div></div>
+      </div>
+      <div class="g2">
+        <div class="card"><h2>Where the money leaks this month</h2><p class="hint">Estimated: leads lost at each step × typical conversion × average treatment value.</p><div class="tbl"><table id="tLeaks"></table></div></div>
+        <div class="card"><h2>Which sources bring paying patients</h2><p class="hint">All sources, not only Meta. Revenue comes from payments matched to each journey.</p><div class="tbl"><table id="tSources"></table></div></div>
+      </div>
+    </section>
+
+    <!-- QUEUE -->
+    <section class="view" id="queue" hidden>
+      <div class="card" style="padding:0">
+        <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line)">
+          <div class="seg" role="group" aria-label="Filter queue">
+            <button aria-pressed="true" data-q="all">All</button><button aria-pressed="false" data-q="waiting">Waiting for reply</button><button aria-pressed="false" data-q="followup">Follow-ups</button><button aria-pressed="false" data-q="returning">Returning</button>
+          </div>
+          <span class="small">Sorted by priority, then wait time. Buttons are mock actions.</span>
+        </div>
+        <div id="qList"></div>
+      </div>
+    </section>
+
+    <!-- PIPELINE -->
+    <section class="view" id="pipeline" hidden>
+      <div class="kanban" id="kanban"></div>
+    </section>
+
+    <!-- CONTACTS -->
+    <section class="view" id="contacts" hidden>
+      <div class="card">
+        <div class="controls" style="margin-bottom:12px">
+          <input type="search" id="cSearch" placeholder="Search name or interest" aria-label="Search contacts">
+          <select id="cTemp" aria-label="Temperature"><option value="">Any label</option><option>hot</option><option>warm</option><option>cold</option></select>
+          <select id="cStage" aria-label="Stage"><option value="">Any stage</option></select>
+          <select id="cSrc" aria-label="Source"><option value="">Any source</option></select>
+          <label class="small"><input type="checkbox" id="cRet"> Returning only</label>
+        </div>
+        <div class="tbl"><table id="tContacts"></table></div>
+      </div>
+    </section>
+
+    <!-- PROFILE -->
+    <section class="view" id="profile" hidden>
+      <div class="card"><div class="phead" id="pHead"></div></div>
+      <div class="jtabs" id="jTabs" role="group" aria-label="Journeys"></div>
+      <div class="g2">
+        <div class="card"><h2>Journey trace</h2><p class="hint">Each step on one timeline, like a request trace. Bar = how long that step took. Red = slower than the clinic's target.</p><div class="wf" id="wf"></div>
+          <div class="legend"><span><i class="box" style="background:var(--s1)"></i>patient</span><span><i class="box" style="background:var(--accent)"></i>staff</span><span><i class="box" style="background:var(--s2)"></i>AI</span><span><i class="box" style="background:var(--muted)"></i>system / booking / payment</span></div></div>
+        <div class="card"><h2>Conversation</h2><p class="hint">Messages from every channel, with booking and payment events in line.</p><div class="chat" id="chat"></div></div>
+      </div>
+    </section>
+
+    <!-- BOTTLENECKS -->
+    <section class="view" id="bottlenecks" hidden>
+      <div class="g2">
+        <div class="card"><h2>Funnel</h2><p class="hint">Journeys reaching each stage, share kept from the step before, and median time per step.</p><div id="funnel"></div></div>
+        <div class="card"><h2>Time spent per step</h2><p class="hint">Median and p90 hours between stages. The longest bar is the bottleneck.</p><div class="chart" id="cSteps"></div>
+          <div class="legend"><span><i class="box" style="background:var(--s1)"></i>median</span><span><i class="box" style="background:var(--s2)"></i>p90</span></div></div>
+      </div>
+      <div class="card"><h2>Slowest open journeys</h2><p class="hint">Open journeys stuck longest in their current stage.</p><div class="tbl"><table id="tStuck"></table></div></div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="view" id="settings" hidden>
+      <div class="g2">
+        <div class="card"><h2>Sources</h2><p class="hint">Everything feeds the same contacts, journeys and events. Meta is one source among several.</p><div id="ints"></div></div>
+        <div class="card"><h2>Targets and hours</h2><p class="hint">From the clinic pack, with this clinic's overrides.</p>
+          <div class="kv">
+            <span>Open hours</span><span>Mon–Sat 09:00–20:00</span>
+            <span>First reply target</span><span>5 min</span>
+            <span>Hot lead alert</span><span>10 min → front desk</span>
+            <span>Escalation</span><span>30 min → manager</span>
+            <span>New journey after</span><span>45 days quiet</span>
+            <span>Lead goes cold after</span><span>3 days quiet</span>
+          </div></div>
+      </div>
+      <div class="g2">
+        <div class="card"><h2>Custom rules</h2><p class="hint">Client-specific logic without code.</p>
+<pre class="code">custom_rules:
+  - name: vip
+    if:   { ">": [{ "var": "contact.lifetime_value" }, 50000] }
+    then: { add_tag: vip, priority: 1, notify: manager }
+  - name: wants_dr_cruz
+    if:   { "in": ["dr cruz", { "var": "last_message_lower" }] }
+    then: { set_temperature: hot, assign: dr-cruz-desk }</pre></div>
+        <div class="card"><h2>API for custom sources</h2><p class="hint">For their POS, clinic system or n8n.</p>
+<pre class="code">POST /api/v1/events
+X-Api-Key: rk_live_••••••••3f2a
+
+{ "event_type": "payment_received",
+  "contact": { "phone": "+639171234567" },
+  "value": 12000,
+  "props": { "invoice": "INV-20391" } }</pre></div>
+      </div>
+    </section>
+  </main>
+</div>
+<div id="tip" hidden></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ---------------------------------------------------------------- fake data (seeded, clearly fake) */
+let seed = 42; const rnd = () => ((seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296);
+const pick = (a) => a[Math.floor(rnd() * a.length)];
+const NAMES = ["Ana Reyes","Bea Santos","Carla Dizon","Dianne Tan","Ella Cruz","Faith Lim","Gela Ramos","Hazel Uy","Ivy Go","Jen Bautista","Kat Mendoza","Lianne Sy","Mae Garcia","Nikki Flores","Olive Aquino","Pia Navarro","Queenie Ong","Rica Torres","Sam Villanueva","Tin Castro","Vina Lopez","Wendy Chua","Yna Pascual","Zoe Rivera","Aly Domingo","Bianca Yap","Cha Robles","Denise Co","Erika Salazar","Joy Manalo","Kim Ocampo","Lara Dela Cruz","Mika Perez","Nina Valdez","Pat Hernandez","Rose Santiago","Sheena Lee","Trish Morales","Aira Jimenez","Belle Ferrer"];
+const INTERESTS = { Botox: 15000, Filler: 25000, Laser: 8000, "Skin booster": 14500, Facial: 3500, Slimming: 30000 };
+const SOURCES = ["Messenger · Botox ad", "Messenger · Laser ad", "Instagram", "WhatsApp", "Website form", "Walk-in (API)", "Referral"];
+const STAGES = ["Inquiry", "Replied", "Qualified", "Booked", "Showed", "Paid"];
+const NOW = new Date("2026-10-04T15:20:00+08:00").getTime();
+const MIN = 60000, H = 60 * MIN, D = 24 * H;
+
+const contacts = NAMES.map((name, i) => {
+  const interest = pick(Object.keys(INTERESTS));
+  const stageIx = Math.min(5, Math.floor(rnd() * rnd() * 7));
+  const temp = stageIx >= 3 ? "hot" : rnd() < 0.25 ? "hot" : rnd() < 0.5 ? "warm" : "cold";
+  const returning = rnd() < 0.22;
+  const pastJ = returning ? 1 + Math.floor(rnd() * 2) : 0;
+  const waiting = stageIx < 3 && rnd() < 0.35;
+  const lastAct = NOW - Math.floor(rnd() * (waiting ? 3 * H : 9 * D));
+  return {
+    id: i, name, interest, value: INTERESTS[interest], temp, stage: STAGES[stageIx], stageIx, returning, pastJ,
+    ltv: pastJ * INTERESTS[interest] * (0.8 + rnd() * 0.6), source: pick(SOURCES),
+    channel: null, waiting, waitMin: waiting ? Math.round((NOW - lastAct) / MIN) : 0, lastAct,
+  };
+});
+contacts.forEach((c) => { c.channel = c.source.startsWith("Instagram") ? "Instagram" : c.source.startsWith("WhatsApp") ? "WhatsApp" : c.source.startsWith("Messenger") ? "Messenger" : c.source.includes("API") ? "Front desk" : c.source.startsWith("Website") ? "Web form" : "Messenger"; });
+contacts[0] = { ...contacts[0], name: "Ana Reyes", interest: "Botox", value: 15000, temp: "hot", stage: "Qualified", stageIx: 2, returning: true, pastJ: 1, ltv: 15000, source: "Messenger · Botox ad", channel: "Messenger", waiting: true, waitMin: 12, lastAct: NOW - 12 * MIN };
+
+function nextAction(c) {
+  if (c.waiting && c.temp === "hot") return [1, "Reply now: confirm treatment, offer 2 slots"];
+  if (c.waiting && c.waitMin > 48 * 60) return [2, "Never answered: apologise and re-offer"];
+  if (c.waiting) return [2, "Reply within 5 min: answer, ask preferred date"];
+  if (c.temp === "hot" && c.stage === "Qualified") return [1, "Close it today: send booking link"];
+  if (c.stage === "Booked") return [3, "Reminder 24h and 2h before"];
+  if (c.stage === "Showed") return [2, "Offer package, set rebook date"];
+  if (c.returning && c.stage === "Inquiry") return [2, "Returning: rebook with usual doctor"];
+  if (c.temp === "warm") return [3, "Nurture: send results + promo"];
+  if (c.stage === "Paid") return [4, "Rebook reminder in 4 months"];
+  return [4, "Add to monthly promo list"];
+}
+contacts.forEach((c) => { [c.pri, c.action] = nextAction(c); });
+
+// Daily metrics: 30 days, AI switched on at day 16
+const days = Array.from({ length: 30 }, (_, i) => {
+  const d = new Date(NOW - (29 - i) * D); const ai = i >= 15;
+  const p50 = ai ? 6 + rnd() * 10 : 120 + rnd() * 420;
+  return { date: d, ai, leads: 28 + Math.floor(rnd() * 16), p50, p90: ai ? p50 * (3 + rnd() * 3) : p50 * (2.5 + rnd() * 2), never: ai ? Math.floor(rnd() * 2) : 2 + Math.floor(rnd() * 5) };
+});
+const HOURS = [3,2,1,0,0,0,1,3,6,9,10,12,16,13,10,9,10,12,15,22,27,29,24,12];
+
+/* ---------------------------------------------------------------- helpers */
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const peso = (v) => "₱" + Math.round(v || 0).toLocaleString("en-PH");
+function fmtMin(m) { if (m == null) return "never"; const t = Math.round(m); if (t < 60) return t + "m";
+  if (t < 1440) return Math.floor(t / 60) + "h" + (t % 60 ? " " + (t % 60) + "m" : ""); const h = Math.round(t / 60); return Math.floor(h / 24) + "d" + (h % 24 ? " " + (h % 24) + "h" : ""); }
+const ago = (ts) => fmtMin((NOW - ts) / MIN) + " ago";
+const chip = (t) => `<span class="chip t-${t}">${t}</span>`;
+const tip = $("#tip");
+function showTip(e, html) { tip.innerHTML = html; tip.hidden = false; tip.style.left = Math.min(e.clientX + 14, innerWidth - 270) + "px"; tip.style.top = (e.clientY + 14) + "px"; }
+const hideTip = () => (tip.hidden = true);
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 2200); }
+const avg = (a) => a.reduce((x, y) => x + y, 0) / a.length;
+
+/* ---------------------------------------------------------------- navigation */
+const TITLES = {
+  overview: ["Overview", "How fast the clinic answers, where inquiries come from, and where money leaks."],
+  queue: ["Action queue", "Who to message right now and what to say. The front desk's home screen."],
+  pipeline: ["Pipeline", "Every open journey by stage. Card colour = hot, warm or cold."],
+  contacts: ["Contacts", "The lead database: every person, their current journey, source and lifetime value."],
+  profile: ["Contact profile", "One person: journeys, trace and conversation."],
+  bottlenecks: ["Bottlenecks", "Where journeys slow down or drop out."],
+  settings: ["Sources & rules", "What feeds the dashboard, the targets, and this clinic's custom logic."],
+};
+const navBtns = [...document.querySelectorAll("nav.side button")];
+function go(view) {
+  if (!TITLES[view]) view = "overview";
+  navBtns.forEach((b) => { if (b.dataset.view === view) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
+  document.querySelectorAll("section.view").forEach((s) => (s.hidden = s.id !== view));
+  $("#vTitle").textContent = TITLES[view][0]; $("#vSub").textContent = TITLES[view][1];
+  try { localStorage.setItem("view", view); } catch (e) {}
+}
+navBtns.forEach((b) => b.addEventListener("click", () => go(b.dataset.view)));
+
+/* ---------------------------------------------------------------- overview */
+function overview() {
+  const n = +$("#range").value, ds = days.slice(-n), half = Math.floor(n / 2);
+  const leads = ds.reduce((a, d) => a + d.leads, 0);
+  const after = ds.filter((d) => d.ai), before = days.filter((d) => !d.ai);
+  const booked = Math.round(leads * 0.19), revenue = booked * 0.72 * 14200;
+  const k = [
+    ["New conversations", leads.toLocaleString(), `${Math.round(avg(ds.map((d) => d.leads)))} a day`],
+    ["Median first reply", fmtMin(avg(after.map((d) => d.p50))), `<span class="up">▼ from ${fmtMin(avg(before.map((d) => d.p50)))}</span> before AI`],
+    ["Answered within 5 min", "81%", `<span class="up">▲ from 34%</span>`],
+    ["Consults booked", booked, `${Math.round((100 * booked) / leads)}% of conversations`],
+    ["Revenue tracked", peso(revenue), "from payments matched to journeys"],
+    ["Est. leak this month", peso(212000), "see breakdown below", true],
+  ];
+  $("#kpis").innerHTML = k.map(([l, v, d, leak]) => `<div class="kpi ${leak ? "leak" : ""}"><span class="l">${l}</span><span class="v">${v}</span><span class="d">${d}</span></div>`).join("");
+
+  // FRT log line
+  const W = 640, Hh = 250, m = { l: 48, r: 12, t: 12, b: 26 }, iw = W - m.l - m.r, ih = Hh - m.t - m.b;
+  const lo = Math.log(1), hi = Math.log(3000), y = (v) => m.t + ih - ((Math.log(Math.max(v, 1)) - lo) / (hi - lo)) * ih;
+  const x = (i) => m.l + (i / (ds.length - 1)) * iw;
+  let s = `<svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="First reply time per day">`;
+  [1, 10, 60, 360, 1440].forEach((t) => (s += `<line class="grid" x1="${m.l}" x2="${W - m.r}" y1="${y(t)}" y2="${y(t)}"/><text x="${m.l - 6}" y="${y(t) + 4}" text-anchor="end">${fmtMin(t)}</text>`));
+  ds.forEach((d, i) => { if (i % Math.ceil(ds.length / 6) === 0) s += `<text x="${x(i)}" y="${Hh - 6}" text-anchor="middle">${d.date.toLocaleDateString("en-PH", { month: "short", day: "numeric" })}</text>`; });
+  const aiIx = ds.findIndex((d) => d.ai);
+  if (aiIx > 0) s += `<line x1="${x(aiIx - 0.5)}" x2="${x(aiIx - 0.5)}" y1="${m.t}" y2="${m.t + ih}" stroke="var(--ink-2)" stroke-dasharray="4 4"/><text x="${x(aiIx - 0.5) + 5}" y="${m.t + 11}" style="fill:var(--ink-2)">AI on</text>`;
+  ["p90", "p50"].forEach((key) => { s += `<path d="${ds.map((d, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(d[key]).toFixed(1)}`).join("")}" fill="none" stroke="var(--${key === "p50" ? "s1" : "s2"})" stroke-width="2"/>`; });
+  const last = ds.length - 1;
+  s += `<circle cx="${x(last)}" cy="${y(ds[last].p50)}" r="4" fill="var(--s1)" stroke="var(--surface)" stroke-width="2"/><circle cx="${x(last)}" cy="${y(ds[last].p90)}" r="4" fill="var(--s2)" stroke="var(--surface)" stroke-width="2"/>`;
+  const cw = iw / (ds.length - 1);
+  ds.forEach((d, i) => (s += `<rect data-i="${i}" x="${x(i) - cw / 2}" y="${m.t}" width="${cw}" height="${ih}" fill="transparent"/>`));
+  s += `<line id="xh" y1="${m.t}" y2="${m.t + ih}" stroke="var(--ink-2)" visibility="hidden"/></svg>`;
+  const el = $("#cFrt"); el.innerHTML = s; const xh = el.querySelector("#xh");
+  el.querySelectorAll("rect[data-i]").forEach((r) => {
+    r.addEventListener("mousemove", (e) => { const i = +r.dataset.i, d = ds[i]; xh.setAttribute("x1", x(i)); xh.setAttribute("x2", x(i)); xh.setAttribute("visibility", "visible");
+      showTip(e, `<b>${d.date.toLocaleDateString("en-PH", { weekday: "short", month: "short", day: "numeric" })}</b><br>${d.leads} conversations<br>p50 ${fmtMin(d.p50)} · p90 ${fmtMin(d.p90)}<br>never answered: ${d.never}${d.ai ? "<br>AI after hours: on" : ""}`); });
+    r.addEventListener("mouseleave", () => { hideTip(); xh.setAttribute("visibility", "hidden"); });
+  });
+
+  // hours stacked bars
+  const W2 = 640, H2 = 250, m2 = { l: 34, r: 8, t: 12, b: 26 }, iw2 = W2 - m2.l - m2.r, ih2 = H2 - m2.t - m2.b, max = 30, bw = iw2 / 24;
+  const y2 = (v) => m2.t + ih2 - (v / max) * ih2;
+  let h = `<svg viewBox="0 0 ${W2} ${H2}" role="img" aria-label="Inquiries by hour">`;
+  for (let i = 0; i < 24; i++) if (i < 9 || i >= 20) h += `<rect x="${m2.l + i * bw}" y="${m2.t}" width="${bw}" height="${ih2}" fill="var(--band)"/>`;
+  [0, 10, 20, 30].forEach((v) => (h += `<line class="grid" x1="${m2.l}" x2="${W2 - m2.r}" y1="${y2(v)}" y2="${y2(v)}"/><text x="${m2.l - 6}" y="${y2(v) + 4}" text-anchor="end">${v}</text>`));
+  HOURS.forEach((v, i) => {
+    const closed = i < 9 || i >= 20, slow = Math.round(v * (closed ? 0.55 : 0.18)), okv = v - slow, bx = m2.l + i * bw + 2, w = bw - 4;
+    if (i % 3 === 0) h += `<text x="${m2.l + i * bw + bw / 2}" y="${H2 - 6}" text-anchor="middle">${String(i).padStart(2, "0")}</text>`;
+    if (!v) return;
+    h += `<rect x="${bx}" y="${y2(okv)}" width="${w}" height="${ih2 - (y2(okv) - m2.t)}" fill="var(--s1)"/>`;
+    if (slow) h += `<path d="M${bx},${y2(okv) - 2} V${y2(v) + 3} q0,-3 3,-3 h${w - 6} q3,0 3,3 V${y2(okv) - 2} Z" fill="var(--s2)"/>`;
+    h += `<rect data-h="${i}" data-v="${v}" data-s="${slow}" x="${m2.l + i * bw}" y="${m2.t}" width="${bw}" height="${ih2}" fill="transparent"/>`;
+  });
+  h += "</svg>"; $("#cHour").innerHTML = h;
+  $("#cHour").querySelectorAll("rect[data-h]").forEach((r) => { r.addEventListener("mousemove", (e) => { const i = +r.dataset.h;
+    showTip(e, `<b>${String(i).padStart(2, "0")}:00</b>${i < 9 || i >= 20 ? " (closed)" : ""}<br>${r.dataset.v} conversations a month<br>slow or never answered: ${r.dataset.s}`); }); r.addEventListener("mouseleave", hideTip); });
+
+  $("#tLeaks").innerHTML = `<thead><tr><th>Leak</th><th class="num">Leads</th><th class="num">Est. lost</th></tr></thead><tbody>
+    <tr><td>Never answered (mostly nights)</td><td class="num">23</td><td class="num">${peso(64000)}</td></tr>
+    <tr><td>Price sent, no booking ask, went quiet</td><td class="num">41</td><td class="num">${peso(58000)}</td></tr>
+    <tr><td>No-shows without a rebook</td><td class="num">9</td><td class="num">${peso(52000)}</td></tr>
+    <tr><td>Past patients due for rebook, not contacted</td><td class="num">17</td><td class="num">${peso(38000)}</td></tr></tbody>`;
+  $("#tSources").innerHTML = `<thead><tr><th>Source</th><th class="num">Conv.</th><th class="num">Booked</th><th class="num">Revenue</th><th class="num">Ad cost / patient</th></tr></thead><tbody>
+    <tr><td><span class="src">Messenger · Botox ad</span></td><td class="num">312</td><td class="num">58</td><td class="num">${peso(612000)}</td><td class="num">${peso(820)}</td></tr>
+    <tr><td><span class="src">Instagram</span></td><td class="num">188</td><td class="num">31</td><td class="num">${peso(351000)}</td><td class="num">–</td></tr>
+    <tr><td><span class="src">Messenger · Laser ad</span></td><td class="num">164</td><td class="num">12</td><td class="num">${peso(96000)}</td><td class="num">${peso(2140)}</td></tr>
+    <tr><td><span class="src">WhatsApp</span></td><td class="num">96</td><td class="num">29</td><td class="num">${peso(388000)}</td><td class="num">–</td></tr>
+    <tr><td><span class="src">Walk-in (API)</span></td><td class="num">44</td><td class="num">40</td><td class="num">${peso(472000)}</td><td class="num">–</td></tr>
+    <tr><td><span class="src">Referral</span></td><td class="num">21</td><td class="num">14</td><td class="num">${peso(205000)}</td><td class="num">–</td></tr></tbody>`;
+}
+$("#range").addEventListener("change", overview);
+
+/* ---------------------------------------------------------------- queue */
+let qFilter = "all";
+function queue() {
+  let list = contacts.filter((c) => c.pri <= 3 && c.stage !== "Paid");
+  if (qFilter === "waiting") list = list.filter((c) => c.waiting);
+  if (qFilter === "followup") list = list.filter((c) => !c.waiting);
+  if (qFilter === "returning") list = list.filter((c) => c.returning);
+  list.sort((a, b) => a.pri - b.pri || b.waitMin - a.waitMin);
+  $("#qBadge").textContent = contacts.filter((c) => c.pri === 1).length;
+  const more = list.length - 15; list = list.slice(0, 15);
+  $("#qList").innerHTML = list.map((c) => `<div class="qitem">
+    <span class="pri ${c.pri === 1 ? "p1" : ""}">P${c.pri}</span>
+    <div><b>${esc(c.name)}</b> ${c.returning ? '<span class="tag">↺ returning</span>' : ""}<div class="small">${esc(c.interest)} · ${peso(c.value)} · <span class="src">${esc(c.channel)}</span></div></div>
+    <div>${chip(c.temp)}<div class="wait ${c.waiting && c.waitMin > 10 ? "late" : ""}">${c.waiting ? "waiting " + fmtMin(c.waitMin) : "quiet " + ago(c.lastAct).replace(" ago", "")}</div></div>
+    <div>${esc(c.action)}<div class="small">${esc(c.stage)} · ${esc(c.source)}</div></div>
+    <div class="acts"><button class="btn primary" data-open="${c.id}">Open</button><button class="btn" data-mark="${c.id}">Mark booked</button></div></div>`).join("") + (more > 0 ? `<p style="padding:12px 14px" class="small">${more} lower-priority items hidden. Pipeline and Contacts show everyone.</p>` : "") || `<p style="padding:16px" class="small">Nothing here right now.</p>`;
+}
+document.querySelectorAll("[data-q]").forEach((b) => b.addEventListener("click", () => { qFilter = b.dataset.q; document.querySelectorAll("[data-q]").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); queue(); }));
+document.addEventListener("click", (e) => {
+  const o = e.target.closest("[data-open]"); if (o) { openProfile(+o.dataset.open); return; }
+  const mk = e.target.closest("[data-mark]"); if (mk) { const c = contacts[+mk.dataset.mark]; c.stage = "Booked"; c.stageIx = 3; c.waiting = false; c.temp = "hot"; [c.pri, c.action] = nextAction(c); toast(`${c.name} marked booked (mock)`); queue(); pipeline(); contactsTable(); }
+});
+
+/* ---------------------------------------------------------------- pipeline */
+function pipeline() {
+  $("#kanban").innerHTML = STAGES.map((st) => { const cs = contacts.filter((c) => c.stage === st);
+    return `<div class="kcol"><h3>${st}<span class="mono">${cs.length}</span></h3><div class="sum">${peso(cs.reduce((a, c) => a + c.value, 0))} potential</div>
+    ${cs.map((c) => `<div class="kcard ${c.temp}" data-open="${c.id}" tabindex="0"><b>${esc(c.name)}</b><span class="small">${esc(c.interest)} · ${peso(c.value)}</span><span class="small">${c.returning ? "↺ returning · " : ""}${c.waiting ? "waiting " + fmtMin(c.waitMin) : ago(c.lastAct)}</span></div>`).join("")}</div>`; }).join("");
+}
+
+/* ---------------------------------------------------------------- contacts */
+$("#cStage").insertAdjacentHTML("beforeend", STAGES.map((s) => `<option>${s}</option>`).join(""));
+$("#cSrc").insertAdjacentHTML("beforeend", SOURCES.map((s) => `<option>${s}</option>`).join(""));
+function contactsTable() {
+  const q = $("#cSearch").value.toLowerCase(), t = $("#cTemp").value, st = $("#cStage").value, sr = $("#cSrc").value, ret = $("#cRet").checked;
+  const rows = contacts.filter((c) => (!q || (c.name + c.interest).toLowerCase().includes(q)) && (!t || c.temp === t) && (!st || c.stage === st) && (!sr || c.source === sr) && (!ret || c.returning));
+  $("#tContacts").innerHTML = `<thead><tr><th>Name</th><th>Label</th><th>Stage</th><th>Interest</th><th>Source</th><th class="num">Journeys</th><th class="num">Lifetime</th><th>Last activity</th></tr></thead><tbody>` +
+    rows.map((c) => `<tr class="click" data-open="${c.id}"><td><b>${esc(c.name)}</b> ${c.returning ? '<span class="tag">↺</span>' : ""}</td><td>${chip(c.temp)}</td><td>${c.stage}</td><td>${esc(c.interest)}</td>
+      <td><span class="src">${esc(c.source)}</span></td><td class="num">${c.pastJ + 1}</td><td class="num">${c.ltv ? peso(c.ltv) : "–"}</td><td class="small">${ago(c.lastAct)}</td></tr>`).join("") + "</tbody>";
+}
+["#cSearch", "#cTemp", "#cStage", "#cSrc", "#cRet"].forEach((s) => $(s).addEventListener("input", contactsTable));
+
+/* ---------------------------------------------------------------- profile + trace */
+const SCRIPTS = {
+  Botox: ["Hi! Magkano po botox?", "Available po ba bukas ng hapon? Pa-book sana", "4pm po. Saan po kayo?"],
+  Filler: ["hm po lip filler", "Ilang ml po usually? May promo?", "Pwede po Saturday?"],
+  Laser: ["Hello, how much po laser for melasma?", "Ilang sessions po?", "Sige po, book ko na Sat"],
+  "Skin booster": ["May promo po kayo sa skin booster?", "Budget ko 15k, pwede gcash?", "This Saturday po pwede?"],
+  Facial: ["magkano po facial", "May slot po today?", "Sige po 5pm"],
+  Slimming: ["Magkano po slimming sa tummy?", "May available po weekend?", "Book ko na po"],
+};
+const REPLIES = ["Hi po! Thanks for messaging Glow. Starts at {v}. May I know your preferred date?", "We have 2pm or 4pm po. Which one?", "Booked po! We're at 2F Glow Bldg, Kapitolyo. See you!"];
+function buildJourney(c, j) {
+  const past = j < c.pastJ, night = !past && c.id % 3 === 0;
+  const localMidnight = Math.floor((c.lastAct + 8 * H) / D) * D - 8 * H;
+  const start = past ? NOW - (c.pastJ - j) * 140 * D - 5 * H : night ? localMidnight - D + 21 * H + 14 * MIN : c.lastAct - 26 * H;
+  const steps = [];
+  let t = start; const add = (kind, label, dur, text) => { steps.push({ kind, label, at: t, dur, text }); t += dur; };
+  const script = SCRIPTS[c.interest];
+  add("patient", "Inquiry", 40 * 1000, script[0]);
+  const stIx = past ? 5 : c.stageIx;
+  if (stIx >= 1 || c.waiting) {
+    const d1 = night ? 11 * H + 58 * MIN : (3 + (c.id % 25)) * MIN;
+    if (night) add("system", "Alert: hot lead waiting", 0, "front desk notified at 09:10");
+    add(!night && !past && c.id % 4 === 1 ? "ai" : "staff", "First reply", d1, REPLIES[0].replace("{v}", peso(c.value)));
+    add("patient", "Patient answers", 9 * MIN, script[1]);
+  }
+  if (stIx >= 2) { add("system", "Qualified (label: hot)", 0, "signals: asks_availability, asks_to_book"); add("staff", "Offer slots", (4 + (c.id % 9)) * MIN, REPLIES[1]); add("patient", "Picks a slot", 6 * MIN, script[2]); }
+  if (stIx >= 3) add("system", "Consult booked", 2 * MIN, "booking tool webhook · Sat 4:00pm");
+  if (stIx >= 4) add("system", "Showed up", 2 * D + 3 * H, "front desk · arrived 3:52pm");
+  if (stIx >= 5) add("system", "Payment received", 70 * MIN, `PayMongo · ${peso(c.value)}`);
+  if (!past && c.waiting) steps.push({ kind: "patient", label: "Waiting for reply", at: NOW - c.waitMin * MIN, dur: c.waitMin * MIN, text: "Hello po? Pwede pa po ba yung slot?", waiting: true });
+  return { steps, outcome: past || stIx >= 5 ? "won" : "open", started: start };
+}
+let current = 0, curJ = 0;
+function openProfile(id) { current = id; curJ = contacts[id].pastJ; go("profile"); profile(); }
+function profile() {
+  const c = contacts[current], j = buildJourney(c, curJ);
+  $("#pHead").innerHTML = `<div class="avatar">${c.name.split(" ").map((p) => p[0]).join("").slice(0, 2)}</div>
+    <div style="display:grid;gap:4px;min-width:0"><h2>${esc(c.name)} ${c.returning ? '<span class="tag">↺ returning patient</span>' : ""}</h2>
+    <div class="facts"><span>${chip(c.temp)}</span><span>Stage: <b>${c.stage}</b></span><span>Interest: ${esc(c.interest)}</span><span>Channels: <span class="src">${esc(c.channel)}</span>${c.returning ? ' <span class="src">WhatsApp</span>' : ""}</span>
+    <span>Lifetime: <b>${c.ltv ? peso(c.ltv) : "–"}</b></span><span>First source: <span class="src">${esc(c.source)}</span></span></div>
+    <div class="small">Next action: <b style="color:var(--ink)">${esc(c.action)}</b></div></div>
+    <div class="acts" style="margin-left:auto"><button class="btn primary" data-mark="${c.id}">Mark booked</button><button class="btn" onclick="toast('Opens the chat in Meta Business Suite (mock)')">Open chat</button></div>`;
+  $("#jTabs").innerHTML = Array.from({ length: c.pastJ + 1 }, (_, i) => { const jj = buildJourney(c, i);
+    return `<button aria-pressed="${i === curJ}" data-j="${i}">Journey ${i + 1} · ${new Date(jj.started).toLocaleDateString("en-PH", { month: "short", year: "numeric" })} · ${jj.outcome}</button>`; }).join("");
+  $("#jTabs").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => { curJ = +b.dataset.j; profile(); }));
+
+  const steps = j.steps, t0 = steps[0].at, tEnd = Math.max(...steps.map((s) => s.at + s.dur)), span = Math.max(tEnd - t0, 1);
+  const col = { patient: "var(--s1)", staff: "var(--accent)", ai: "var(--s2)", system: "var(--muted)" };
+  $("#wf").innerHTML = steps.map((s) => { const slow = (s.label === "First reply" || s.waiting) && s.dur > 5 * MIN;
+    const left = ((s.at - t0) / span) * 100, w = Math.max((s.dur / span) * 100, 0.6);
+    return `<div class="wrow ${slow ? "slow" : ""}"><div class="lbl"><i class="dot" style="background:${col[s.kind]}"></i><span title="${esc(s.label)}">${esc(s.label)}</span></div>
+      <div class="track"><i style="left:${left}%;width:${Math.min(w, 100 - left)}%;background:${slow ? "var(--hot)" : col[s.kind]}"></i></div>
+      <span class="dur">${s.dur ? fmtMin(s.dur / MIN) : "·"}</span></div>`; }).join("") +
+    `<p class="small" style="margin-top:8px">Total so far: <b>${fmtMin(span / MIN)}</b> · ${j.outcome === "won" ? "won" : "open"}</p>`;
+
+  $("#chat").innerHTML = steps.map((s) => { const time = new Date(s.at + (s.kind === "patient" ? 0 : s.dur)).toLocaleString("en-PH", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+    if (s.kind === "system") return `<div class="ev">${esc(s.label)} · ${esc(s.text)}</div>`;
+    if (s.kind === "patient") return `<div class="bubble in">${esc(s.text)}<span class="meta">${time} · ${esc(c.channel)}${s.waiting ? " · waiting" : ""}</span></div>`;
+    return `<div class="bubble out">${esc(s.text)}<span class="meta">${time} · ${s.kind === "ai" ? "AI" : "Staff (Business Suite)"}</span></div>`; }).join("");
+}
+
+/* ---------------------------------------------------------------- bottlenecks */
+function bottlenecks() {
+  const counts = [612, 563, 241, 132, 98, 81], steps = [[0.2, 9.5], [0.6, 30], [5, 52], [40, 96], [0.8, 3]];
+  let worst = 1, worstR = 1; counts.forEach((n, i) => { if (i && n / counts[i - 1] < worstR) { worstR = n / counts[i - 1]; worst = i; } });
+  $("#funnel").innerHTML = STAGES.map((s, i) => `${i ? `<div class="fstep">↳ step took ${fmtMin(steps[i - 1][0] * 60)} median · ${fmtMin(steps[i - 1][1] * 60)} p90</div>` : ""}
+    <div class="frow ${i === worst ? "worst" : ""}"><span>${s}</span><div class="bar" style="width:${(100 * counts[i]) / counts[0]}%"></div>
+    <span class="stat"><b>${counts[i]}</b>${i ? ` · <b>${Math.round((100 * counts[i]) / counts[i - 1])}%</b> kept` : ""}${i === worst ? " · biggest drop" : ""}</span></div>`).join("");
+
+  const W = 560, Hh = 230, m = { l: 150, r: 40, t: 8, b: 24 }, iw = W - m.l - m.r, rowH = (Hh - m.t - m.b) / 5, max = 100;
+  const x = (v) => m.l + (v / max) * iw;
+  let s = `<svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="Hours per step">`;
+  [0, 25, 50, 75, 100].forEach((v) => (s += `<line class="grid" x1="${x(v)}" x2="${x(v)}" y1="${m.t}" y2="${Hh - m.b}"/><text x="${x(v)}" y="${Hh - 6}" text-anchor="middle">${v}h</text>`));
+  steps.forEach(([p50, p90], i) => { const yy = m.t + i * rowH + 6;
+    s += `<text x="${m.l - 8}" y="${yy + 12}" text-anchor="end" style="fill:var(--ink-2)">${STAGES[i]} → ${STAGES[i + 1]}</text>`;
+    s += `<rect x="${m.l}" y="${yy}" width="${Math.max(x(p90) - m.l, 2)}" height="8" rx="3" fill="var(--s2)"/>`;
+    s += `<rect x="${m.l}" y="${yy + 10}" width="${Math.max(x(p50) - m.l, 2)}" height="8" rx="3" fill="var(--s1)"/>`;
+    s += `<rect data-i="${i}" x="${m.l}" y="${yy - 2}" width="${iw}" height="${rowH - 2}" fill="transparent"/>`; });
+  s += "</svg>"; $("#cSteps").innerHTML = s;
+  $("#cSteps").querySelectorAll("rect[data-i]").forEach((r) => { r.addEventListener("mousemove", (e) => { const [a, b] = steps[+r.dataset.i];
+    showTip(e, `<b>${STAGES[+r.dataset.i]} → ${STAGES[+r.dataset.i + 1]}</b><br>median ${fmtMin(a * 60)}<br>p90 ${fmtMin(b * 60)}`); }); r.addEventListener("mouseleave", hideTip); });
+
+  const stuck = contacts.filter((c) => c.stage !== "Paid").map((c) => ({ c, days: Math.round((NOW - c.lastAct) / D + (c.id % 5)) })).sort((a, b) => b.days - a.days).slice(0, 8);
+  $("#tStuck").innerHTML = `<thead><tr><th>Name</th><th>Stuck in</th><th class="num">Days</th><th>Label</th><th>Next action</th></tr></thead><tbody>` +
+    stuck.map(({ c, days }) => `<tr class="click" data-open="${c.id}"><td><b>${esc(c.name)}</b></td><td>${c.stage}</td><td class="num">${days}</td><td>${chip(c.temp)}</td><td>${esc(c.action)}</td></tr>`).join("") + "</tbody>";
+}
+
+/* ---------------------------------------------------------------- settings */
+$("#ints").innerHTML = [
+  ["f", "Facebook Messenger", "Glow Aesthetics Page · webhooks: messages, echoes, referrals, reads", "ok", "Connected"],
+  ["ig", "Instagram", "@glowaesthetics.ph · linked to the Page", "ok", "Connected"],
+  ["wa", "WhatsApp Business (Coexistence)", "+63 917 111 0000 · phone app stays in use", "warn", "Pending approval"],
+  ["cal", "Booking: Google Calendar", "Front desk calendar · matched by phone", "ok", "Syncing every 5 min"],
+  ["₱", "Payments: PayMongo", "Payment links carry the journey id", "ok", "Connected"],
+  ["api", "Events API (custom)", "Used by the POS for walk-ins and payments", "ok", "Key ••••3f2a"],
+  ["↗", "Outbound webhook", "crm.glow.ph · journey.hot, journey.won", "off", "Off"],
+  ["vb", "Viber", "Paid add-on, not set up", "off", "Not connected"],
+].map(([i, n, d, st, lbl]) => `<div class="int"><span class="ico">${i}</span><div><b>${n}</b><div class="small">${d}</div></div><span class="state ${st}">${lbl}</span></div>`).join("");
+
+/* ---------------------------------------------------------------- boot */
+overview(); queue(); pipeline(); contactsTable(); bottlenecks(); current = 0; curJ = contacts[0].pastJ; profile();
+let startView = location.hash.slice(1);
+if (!TITLES[startView]) { try { startView = localStorage.getItem("view") || "overview"; } catch (e) { startView = "overview"; } }
+go(startView);
+</script>

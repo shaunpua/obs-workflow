@@ -1,0 +1,776 @@
+<title>Revenue Observability POC Plan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a field manual. Sticky contents rail on the left (desktop), one reading column, diagrams in quiet panels. */
+:root {
+  --bg: #f4f6f4; --surface: #ffffff; --ink: #141816; --ink-2: #4b524d; --muted: #737a75; --line: #dde2de;
+  --accent: #0f6b5c; --accent-soft: #e2f0ec; --code: #eef1ee; --warn: #9a5b00; --bad: #b42f2f;
+  --f-display: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111412; --surface: #191d1a; --ink: #edf1ee; --ink-2: #b6bdb7; --muted: #8a918b; --line: #2b312d;
+  --accent: #52c3ad; --accent-soft: #1b2e29; --code: #222824; --warn: #f0b44a; --bad: #ef7d7d; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #111412; --surface: #191d1a; --ink: #edf1ee; --ink-2: #b6bdb7; --muted: #8a918b; --line: #2b312d;
+  --accent: #52c3ad; --accent-soft: #1b2e29; --code: #222824; --warn: #f0b44a; --bad: #ef7d7d; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 16px/1.6 var(--f-body); }
+.layout { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 64px;
+  display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 40px; }
+@media (max-width: 900px) { .layout { grid-template-columns: minmax(0, 1fr); gap: 16px; } aside.toc { position: static !important; } }
+
+aside.toc { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); align-self: start; font-size: 0.88rem; }
+aside.toc .eyebrow { margin-bottom: 8px; }
+aside.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+aside.toc a { display: grid; grid-template-columns: 26px 1fr; color: var(--ink-2); text-decoration: none; padding: 4px 6px; border-radius: 6px; }
+aside.toc a:hover, aside.toc a:focus-visible { background: var(--accent-soft); color: var(--ink); outline: none; }
+aside.toc a span { font: 600 0.75rem/1.8 var(--f-mono); color: var(--muted); }
+@media (max-width: 900px) { aside.toc ol { grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); } }
+
+main { min-width: 0; display: grid; gap: 48px; }
+header.hero { display: grid; gap: 10px; }
+.eyebrow { font: 600 0.72rem/1 var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+h1 { font: 800 clamp(1.9rem, 4vw, 2.6rem)/1.08 var(--f-display); margin: 0; letter-spacing: -0.015em; text-wrap: balance; }
+h2 { font: 800 1.5rem/1.2 var(--f-display); margin: 0; letter-spacing: -0.01em; text-wrap: balance; display: flex; gap: 12px; align-items: baseline; }
+h2 .n { font: 600 0.85rem var(--f-mono); color: var(--accent); }
+h3 { font: 700 1.05rem/1.3 var(--f-display); margin: 0; }
+p { margin: 0; max-width: 68ch; }
+.lede { font-size: 1.12rem; color: var(--ink-2); max-width: 64ch; }
+section { display: grid; gap: 16px; scroll-margin-top: 20px; }
+.muted { color: var(--ink-2); }
+code { font: 0.86em var(--f-mono); background: var(--code); padding: 1px 5px; border-radius: 4px; }
+
+.status { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill { font: 600 0.75rem var(--f-mono); padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); }
+.pill.on { border-color: var(--accent); color: var(--accent); }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px; min-width: 0; }
+.panel > .cap { font-size: 0.88rem; color: var(--ink-2); margin-top: 10px; }
+pre.mermaid { margin: 0; background: transparent; overflow-x: auto; text-align: center; }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 16px; }
+.cols3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 14px; }
+.tile { border-top: 3px solid var(--accent); padding-top: 10px; display: grid; gap: 4px; }
+.tile p { font-size: 0.92rem; color: var(--ink-2); }
+
+.tbl { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+th { text-align: left; font: 600 0.7rem var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+  padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; background: var(--surface); }
+td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+td.mono { font-family: var(--f-mono); font-size: 0.82rem; white-space: nowrap; }
+.t-time { font-family: var(--f-mono); font-size: 0.82rem; white-space: nowrap; color: var(--accent); }
+
+.chip { display: inline-block; font: 600 0.72rem var(--f-mono); padding: 1px 8px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
+.hot { color: var(--bad); } .warm { color: var(--warn); } .cold { color: var(--muted); }
+
+.layers { display: grid; gap: 10px; }
+.layer { display: grid; grid-template-columns: 150px 1fr; gap: 14px; padding: 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.layer b { font-family: var(--f-display); }
+.layer .freq { font: 0.75rem var(--f-mono); color: var(--muted); display: block; }
+@media (max-width: 560px) { .layer { grid-template-columns: 1fr; } }
+pre.code { margin: 0; background: var(--code); border-radius: 8px; padding: 14px; overflow-x: auto; font: 0.82rem/1.55 var(--f-mono); }
+
+ol.steps { list-style: none; counter-reset: s; margin: 0; padding: 0; display: grid; gap: 10px; }
+ol.steps li { display: grid; grid-template-columns: 32px 1fr; gap: 10px; max-width: 72ch; }
+ol.steps li::before { counter-increment: s; content: counter(s); width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center;
+  font: 700 0.8rem var(--f-mono); color: var(--accent); background: var(--accent-soft); }
+.callout { border-left: 3px solid var(--accent); padding: 4px 0 4px 14px; color: var(--ink-2); max-width: 72ch; }
+ul.plain { margin: 0; padding-left: 18px; display: grid; gap: 4px; max-width: 72ch; }
+.mock { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); overflow-x: auto; }
+.mock .bar { display: flex; flex-wrap: wrap; gap: 8px 14px; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--line); font: 600 0.8rem var(--f-mono); color: var(--ink-2); }
+.qrow { display: grid; grid-template-columns: 34px 120px 92px 120px minmax(180px, 1fr) 90px; gap: 10px; align-items: center; padding: 9px 14px; border-bottom: 1px solid var(--line); font-size: 0.88rem; min-width: 700px; }
+.qrow:last-child { border-bottom: 0; }
+.qrow .btn { font: 600 0.75rem var(--f-body); border: 1px solid var(--accent); color: var(--accent); border-radius: 6px; padding: 3px 8px; text-align: center; }
+.ret { font: 600 0.72rem var(--f-mono); color: var(--accent); }
+.kanban { display: grid; grid-template-columns: repeat(6, minmax(130px, 1fr)); gap: 10px; min-width: 820px; padding: 12px; }
+.kcol h4 { margin: 0 0 8px; font: 600 0.72rem var(--f-mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+.kcard { border: 1px solid var(--line); border-left: 3px solid var(--muted); border-radius: 6px; padding: 6px 8px; font-size: 0.8rem; margin-bottom: 6px; background: var(--bg); }
+.kcard.h { border-left-color: var(--bad); } .kcard.w { border-left-color: var(--warn); }
+.ladder { display: grid; gap: 8px; }
+.rung { display: grid; grid-template-columns: 36px 200px 1fr 120px; gap: 12px; align-items: start; padding: 10px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); font-size: 0.9rem; }
+.rung .lv { font: 700 0.85rem var(--f-mono); color: var(--accent); }
+.rung .who { font: 0.75rem var(--f-mono); color: var(--muted); }
+@media (max-width: 640px) { .rung { grid-template-columns: 30px 1fr; } .rung > :nth-child(n+3) { grid-column: 2; } }
+.council { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 14px; }
+.voice { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 8px; }
+.voice .who { font: 600 0.75rem var(--f-mono); letter-spacing: 0.05em; text-transform: uppercase; color: var(--accent); }
+.voice q { color: var(--ink); quotes: "“" "”"; }
+.voice .then { font-size: 0.88rem; color: var(--ink-2); border-top: 1px dashed var(--line); padding-top: 8px; }
+.yes { color: var(--accent); font-weight: 700; } .no { color: var(--bad); font-weight: 700; } .part { color: var(--warn); font-weight: 700; }
+.refs { columns: 2 320px; gap: 24px; font-size: 0.88rem; }
+.refs a { color: var(--accent); overflow-wrap: anywhere; }
+.refs h3 { break-after: avoid; margin-top: 10px; }
+.refs ul { margin: 4px 0 10px; padding-left: 18px; }
+.decided td:first-child { font-family: var(--f-mono); color: var(--accent); }
+</style>
+
+<div class="layout">
+  <aside class="toc" aria-label="Contents">
+    <div class="eyebrow">Contents</div>
+    <ol>
+      <li><a href="#decisions"><span>00</span>Decisions</a></li>
+      <li><a href="#idea"><span>01</span>The idea</a></li>
+      <li><a href="#stack"><span>02</span>Tech stack</a></li>
+      <li><a href="#data"><span>03</span>Data per channel</a></li>
+      <li><a href="#history"><span>04</span>Old data</a></li>
+      <li><a href="#flows"><span>05</span>Sample flows</a></li>
+      <li><a href="#outputs"><span>06</span>What you get</a></li>
+      <li><a href="#leads"><span>07</span>Leads and returning</a></li>
+      <li><a href="#dashboards"><span>08</span>Dashboards</a></li>
+      <li><a href="#custom"><span>09</span>Custom logic</a></li>
+      <li><a href="#onboarding"><span>10</span>Onboarding</a></li>
+      <li><a href="#mapping"><span>11</span>Mapping a workflow</a></li>
+      <li><a href="#wa"><span>12</span>WhatsApp and Viber</a></li>
+      <li><a href="#selftest"><span>13</span>Test on your Page</a></li>
+      <li><a href="#scale"><span>14</span>Scale and cost</a></li>
+      <li><a href="#risks"><span>15</span>Risks</a></li>
+      <li><a href="#council"><span>16</span>LLM council</a></li>
+      <li><a href="#roadmap"><span>17</span>Roadmap</a></li>
+      <li><a href="#refs"><span>18</span>References</a></li>
+    </ol>
+  </aside>
+
+  <main>
+    <header class="hero">
+      <div class="eyebrow">POC plan v2 · clinics first</div>
+      <h1>Revenue Observability: proof of concept</h1>
+      <p class="lede">Track every customer conversation and booking for a clinic, from any source. Measure how fast staff reply, label each lead hot, warm or cold, recognise returning patients, show where leads drop off, and tell staff what to do next.</p>
+      <div class="status"><span class="pill on">Plan v2</span><span class="pill on">Code: first version on GitHub, paused</span><span class="pill">Next: connect your own Page</span></div>
+    </header>
+
+    <!-- 00 -->
+    <section id="decisions">
+      <h2><span class="n">00</span>Your decisions so far</h2>
+      <div class="tbl"><table class="decided">
+        <thead><tr><th>#</th><th>Decision</th><th>What it means for the build</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Connect clients' Meta inbox directly</td><td>Staff keep replying in Business Suite or the WhatsApp Business app. No Chatwoot for now.</td></tr>
+          <tr><td>2</td><td>The client dashboard covers <b>all</b> sources, not only Meta</td><td>The dashboard reads one set of tables. Meta, booking tools, payments, the events API and CSV imports are adapters that write into them, each tagged with its source.</td></tr>
+          <tr><td>3</td><td>First niche: clinics</td><td>Build and validate the clinic config first.</td></tr>
+          <tr><td>4</td><td>Booking capture: use their existing tool if possible</td><td>Webhook adapter → Google Calendar → CSV → our own booking link or a staff button (section 10).</td></tr>
+          <tr><td>5</td><td>Meta business verification: open</td><td>Recommendation: start in week 1, since it gates connecting any Page that isn't yours.</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- 01 -->
+    <section id="idea">
+      <h2><span class="n">01</span>The idea and how a client uses it</h2>
+      <p>Meta sends your server a copy of every customer message and every reply the Page sends, including replies staff type by hand. Bookings and payments come from the clinic's own tools. The clinic doesn't change how it works.</p>
+      <div class="panel">
+<pre class="mermaid">
+flowchart LR
+  C([Patient]) -->|DM / WhatsApp| M[Meta]
+  S([Staff]) -->|reply as usual| M
+  M -->|webhooks| Y[Your app]
+  BK[Booking tool] -->|webhook or sync| Y
+  PAY[Payments / POS] -->|webhook or events API| Y
+  Y --> A[Alerts to front desk]
+  Y --> D[Weekly owner digest]
+  Y --> P[Client portal: queue, pipeline, contacts]
+</pre>
+      </div>
+    </section>
+
+    <!-- 02 -->
+    <section id="stack">
+      <h2><span class="n">02</span>Tech stack and architecture</h2>
+      <div class="panel">
+<pre class="mermaid">
+flowchart TB
+  subgraph SRC["Sources (adapters)"]
+    direction LR
+    FB[Messenger] ~~~ IG[Instagram] ~~~ WA[WhatsApp] ~~~ LA[Lead Ads] ~~~ BK[Booking tool] ~~~ PY[Payments] ~~~ API[Events API / CSV]
+  end
+  subgraph APP["Your app: FastAPI on one VPS (Docker Compose + Caddy)"]
+    direction LR
+    IN[Webhook endpoints: verify + store raw] --> Q[[Queue in Postgres]] --> W[Workers: normalize, identity, journey, classify, next action]
+    CR[Cron: alerts every minute, decay hourly, digest weekly]
+  end
+  CFG[/"Config: clinic pack + client file + custom rules"/] -.-> W
+  DB[(Postgres: contacts, identities, journeys, messages, events)]
+  W --> DB
+  CR --> DB
+  DB --> V[SQL views: metrics]
+  V --> PORTAL[Client portal: FastAPI + HTMX, ECharts]
+  V --> MB[Metabase: owner analytics, static embeds]
+  CR --> TG[Telegram alerts + digest]
+  W --> OUT[Outbound webhooks to client systems]
+  APP -.-> OPS[Your ops: Prometheus + Grafana, Sentry, heartbeats]
+  SRC --> IN
+</pre>
+      </div>
+      <div class="tbl"><table>
+        <thead><tr><th>Layer</th><th>POC (now)</th><th>v1 (first clients)</th></tr></thead>
+        <tbody>
+          <tr><td>API</td><td>Python + FastAPI</td><td>same</td></tr>
+          <tr><td>Database</td><td>Postgres 16</td><td>Postgres 16 with daily backups</td></tr>
+          <tr><td>Queue</td><td>none</td><td>Postgres queue (<code>FOR UPDATE SKIP LOCKED</code>) or Redis + RQ</td></tr>
+          <tr><td>Client portal</td><td>generated HTML</td><td>FastAPI + Jinja + HTMX (or Next.js), charts with Apache ECharts</td></tr>
+          <tr><td>Analytics</td><td>in the portal</td><td>Metabase OSS static embeds, locked to the client</td></tr>
+          <tr><td>Your monitoring</td><td>logs</td><td>Prometheus + Grafana, Uptime Kuma, Sentry</td></tr>
+          <tr><td>Alerts</td><td>console</td><td>Telegram bot (free), email; Viber only if a client pays for it</td></tr>
+          <tr><td>LLM</td><td>Claude, optional</td><td>Claude for unclear leads only</td></tr>
+          <tr><td>Hosting</td><td>laptop + tunnel</td><td>one VPS, Docker Compose, Caddy for HTTPS</td></tr>
+          <tr><td>One-off automations</td><td>–</td><td>n8n, kept outside the core</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- 03 -->
+    <section id="data">
+      <h2><span class="n">03</span>What data you can get from each channel</h2>
+      <h3>Messenger: webhooks pushed to you</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Webhook field</th><th>Contains</th><th>Used for</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">messages</td><td>Text, attachments (image, video, audio, file, location, sticker), quick-reply payload, timestamp, sender id. First message from an ad has a <code>referral</code> with the <code>ad_id</code></td><td>Inbound log, labels, ad attribution</td></tr>
+          <tr><td class="mono">message_echoes</td><td>Every message the Page sends, with the sending app's <code>app_id</code></td><td>Reply times, AI vs staff</td></tr>
+          <tr><td class="mono">messaging_referrals</td><td>Arrived via m.me link with <code>ref</code>, ad or plugin, in an existing chat</td><td>QR codes and campaigns for returning chats</td></tr>
+          <tr><td class="mono">messaging_postbacks</td><td>Button, Get Started and menu taps</td><td>Funnel steps inside the chat</td></tr>
+          <tr><td class="mono">message_reads</td><td>Patient read the Page's messages</td><td>"Seen, no reply"</td></tr>
+          <tr><td class="mono">message_deliveries</td><td>Page messages delivered</td><td>Delivery problems</td></tr>
+          <tr><td class="mono">message_reactions</td><td>Reaction to a message</td><td>Sentiment</td></tr>
+          <tr><td class="mono">messaging_optins</td><td>Opted in to notifications</td><td>Follow-ups outside 24h</td></tr>
+          <tr><td class="mono">messaging_handovers / standby</td><td>Thread control between apps</td><td>Who owns a conversation (bot vs inbox)</td></tr>
+          <tr><td class="mono">leadgen</td><td>A Lead Ads form was submitted (<code>leadgen_id</code> to fetch)</td><td>Form leads in the same database</td></tr>
+        </tbody>
+      </table></div>
+      <h3>Messenger: APIs you call</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>API</th><th>Gives you</th><th>Limit</th></tr></thead>
+        <tbody>
+          <tr><td>User Profile</td><td>First name, last name, profile photo for a sender id</td><td>Names aren't in the webhook, so fetch once per new contact</td></tr>
+          <tr><td>Conversations API</td><td>Conversation list, last update time, message ids</td><td>Details only for the <b>20 most recent</b> messages per conversation</td></tr>
+          <tr><td>Marketing API insights</td><td>Daily spend, impressions, clicks per ad</td><td>Cost per booked patient</td></tr>
+          <tr><td>Send API</td><td>Send replies, buttons, quick replies</td><td>24h window; after that tags such as <code>HUMAN_AGENT</code> (7 days, not for promos)</td></tr>
+        </tbody>
+      </table></div>
+      <h3>Side by side</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Data</th><th>Messenger</th><th>Instagram</th><th>WhatsApp (Coexistence)</th><th>Viber bot</th></tr></thead>
+        <tbody>
+          <tr><td>Patient messages</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+          <tr><td>Staff replies typed by hand</td><td class="yes">echoes</td><td class="yes">is_echo</td><td class="yes">smb_message_echoes</td><td class="no">only via your tool</td></tr>
+          <tr><td>AI vs human</td><td class="yes">app_id</td><td class="yes">app_id</td><td class="yes">yes</td><td class="yes">yes</td></tr>
+          <tr><td>Ad attribution</td><td class="yes">referral</td><td class="yes">referral</td><td class="yes">click-to-WhatsApp</td><td class="no">no</td></tr>
+          <tr><td>Read receipts</td><td class="yes">yes</td><td class="yes">yes</td><td class="yes">statuses</td><td class="yes">yes</td></tr>
+          <tr><td>Phone number</td><td class="part">if given</td><td class="part">if given</td><td class="yes">always</td><td class="no">no</td></tr>
+          <tr><td>Past history</td><td class="part">last 20 per chat</td><td class="part">last 20 per chat</td><td class="yes">~6 months, once</td><td class="no">no</td></tr>
+        </tbody>
+      </table></div>
+      <p class="callout">Never trackable: chats on staff's personal Messenger, WhatsApp or Viber accounts. Onboarding moves those conversations to the business inbox.</p>
+    </section>
+
+    <!-- 04 -->
+    <section id="history">
+      <h2><span class="n">04</span>Old data: what can be pulled in</h2>
+      <div class="panel">
+<pre class="mermaid">
+flowchart LR
+  subgraph ON["At onboarding (one time)"]
+    direction TB
+    B1["Messenger + IG: all conversations,<br/>last 20 messages each"] --> CT[(contacts)]
+    B2["WhatsApp Coexistence: history webhook,<br/>up to ~6 months"] --> CT
+    B3["Booking / POS export (CSV)"] --> CT
+  end
+  subgraph LIVE["From then on"]
+    W[Live webhooks] --> BL[Baseline: 1-2 weeks of clean numbers]
+  end
+  CT --> TAG[Past patients tagged: returning, lifetime value]
+  ON --> LIVE
+</pre>
+        <p class="cap">Use backfilled data for the contact list, past patients and context. Take "before" reply-time numbers only from live data, because backfill is incomplete.</p>
+      </div>
+<pre class="code"># Backfill sketch: Page conversations → contacts + recent messages
+url = f"https://graph.facebook.com/v23.0/{page_id}/conversations"
+params = {"platform": "messenger", "access_token": token,
+          "fields": "id,updated_time,participants,messages.limit(20){id,created_time,from,message}"}
+while url:
+    page = httpx.get(url, params=params).json()
+    for conv in page["data"]:
+        upsert_contact(conv["participants"])
+        for m in conv.get("messages", {}).get("data", []):
+            insert_message(m, source="backfill")          # dedupe by message id
+    url, params = page.get("paging", {}).get("next"), None</pre>
+    </section>
+
+    <!-- 05 -->
+    <section id="flows">
+      <h2><span class="n">05</span>Sample flows</h2>
+      <h3>Flow A: a night message, answered next morning</h3>
+      <div class="panel">
+<pre class="mermaid">
+sequenceDiagram
+  autonumber
+  participant C as Ana (patient)
+  participant M as Meta
+  participant Y as Your app
+  participant F as Front desk
+  C->>M: 21:14 "Hi! Magkano po botox?" (from Botox ad)
+  M->>Y: messages webhook
+  Y->>Y: contact + journey 1, source AD_BOTOX_OCT, WARM, clock starts
+  C->>M: 21:15 "Available po ba bukas? Pa-book sana"
+  Y->>Y: same wait, score 80, HOT, qualified
+  Note over Y,F: Opens 09:00. 10 business minutes pass.
+  Y->>F: Alert: HOT lead waiting. Offer 2 slots.
+  F->>M: 09:12 reply in Business Suite
+  M->>Y: message_echoes webhook (inbox app id = staff)
+  Y->>Y: first reply 11h 58m raw, 12m business
+  C->>Y: booking tool webhook: consult booked 4pm
+  C->>Y: POS: paid P15,000, journey won, credited to the ad
+</pre>
+      </div>
+      <h3>Flow D: the same patient comes back a few months later</h3>
+      <div class="panel">
+<pre class="mermaid">
+sequenceDiagram
+  participant C as Ana
+  participant Y as Your app
+  participant F as Front desk
+  Note over C,Y: Oct 2025: journey 1, Botox, won, P15,000
+  C->>Y: Feb 2026 "Pa-book ulit po" (same Messenger id)
+  Y->>Y: same id = same contact (Ana)
+  Y->>Y: journey 1 is closed, so open journey 2, tag returning
+  Y->>F: Returning patient, 1 past visit, P15,000 lifetime. Rebook with usual doctor.
+</pre>
+      </div>
+      <div class="cols">
+        <div class="panel"><h3>Flow B: AI on after hours</h3><p class="muted" style="margin-top:6px">The AI replies at 21:15. The echo carries <b>your</b> app id, so it's logged as an AI reply. In the 14-day simulation the median first reply went from <b>7h 25m</b> to <b>10m</b>, and bookings from <b>7</b> to <b>12</b>.</p></div>
+        <div class="panel"><h3>Flow C: price shopper goes cold</h3><p class="muted" style="margin-top:6px">"hm po filler" gets a price 3 hours later, then "ok po thanks" and silence. The lead is <span class="chip cold">cold</span> and moves to the monthly promo list. The trace shows it died right after a price with no booking ask.</p></div>
+      </div>
+    </section>
+
+    <!-- 06 -->
+    <section id="outputs">
+      <h2><span class="n">06</span>What you get from the data</h2>
+      <div class="cols3">
+        <div class="tile"><h3>Metric logs</h3><p>Reply time = business reply minus the <i>first unanswered</i> patient message. p50, p90, business-hours and raw.</p></div>
+        <div class="tile"><h3>Classification</h3><p>Keyword rules score hot, warm or cold. An LLM checks only unclear leads.</p></div>
+        <div class="tile"><h3>Traces</h3><p>Each journey on a timeline with the gap between steps. Slow gaps in red.</p></div>
+        <div class="tile"><h3>Bottlenecks</h3><p>Share kept at each stage, time per step, inquiries by hour vs opening hours.</p></div>
+        <div class="tile"><h3>Next actions</h3><p>Ordered rules pick the one thing to do now for each journey.</p></div>
+        <div class="tile"><h3>Alerts</h3><p>Hot lead waiting 10 min → front desk. 30 min → manager. No messages in 6h → you.</p></div>
+      </div>
+      <div class="panel">
+<pre class="mermaid">
+flowchart LR
+  T[Patient messages] --> R{Rule signals}
+  R -->|"asks to book +45, slot +35, location +20"| S[Score]
+  R -->|"price only +8, budget +15"| S
+  R -->|"later -25, too expensive -40"| S
+  S -->|"50 or more"| H[HOT]
+  S -->|"20 to 49"| W[WARM]
+  S -->|"under 20"| CO[COLD]
+  W -.unclear.-> L[LLM check]
+  L --> F[Label + intent + next action]
+  H --> F
+  CO --> F
+</pre>
+      </div>
+    </section>
+
+    <!-- 07 -->
+    <section id="leads">
+      <h2><span class="n">07</span>Leads: contacts, journeys and returning patients</h2>
+      <p>A lead database has two levels. A <b>contact</b> is a person. A <b>journey</b> is one attempt to buy. Stage, temperature and next action belong to the journey, so a returning patient doesn't mess up the funnel.</p>
+      <div class="panel">
+<pre class="mermaid">
+erDiagram
+  CONTACT ||--o{ IDENTITY : "known as"
+  CONTACT ||--o{ JOURNEY : "buys through"
+  JOURNEY ||--o{ MESSAGE : contains
+  JOURNEY ||--o{ EVENT : "trace of"
+  CONTACT {
+    string name
+    string phone
+    float lifetime_value
+  }
+  IDENTITY {
+    string kind
+    string value
+  }
+  JOURNEY {
+    int number
+    string stage
+    string temperature
+    string outcome
+    boolean returning
+  }
+</pre>
+      </div>
+      <div class="cols">
+        <div class="panel">
+          <h3>Rules for returning patients</h3>
+          <ol class="steps" style="margin-top:8px">
+            <li><span><b>Same chat id = same person.</b> A Messenger id stays fixed for that person on that Page, so a message a year later finds the same contact.</span></li>
+            <li><span><b>Other channels:</b> merge automatically only on exact phone or email. Similar names become a suggestion for staff.</span></li>
+            <li><span><b>New journey</b> if the last one was won or lost, or the last message was more than 45 days ago (clinic default).</span></li>
+            <li><span>The new journey is tagged <span class="ret">↺ returning</span> and shows past visits and lifetime value.</span></li>
+          </ol>
+        </div>
+<pre class="code">def journey_for(contact, msg_time, cfg):
+    j = latest_journey(contact)
+    if (j is None or j.outcome in ("won", "lost")
+            or (msg_time - j.last_activity).days
+               > cfg["new_journey_after_days"]):
+        return open_journey(
+            contact,
+            number=(j.number + 1 if j else 1),
+            returning=j is not None)
+    return j</pre>
+      </div>
+
+      <h3>Four ways to view leads, one job each</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>View</th><th>Who</th><th>Answers</th></tr></thead>
+        <tbody>
+          <tr><td><b>Action queue</b> (home)</td><td>Front desk</td><td>Who do I message right now?</td></tr>
+          <tr><td><b>Pipeline board</b></td><td>Owner</td><td>How many patients are in each phase?</td></tr>
+          <tr><td><b>Contact profile</b></td><td>Anyone</td><td>Who is this, what did they buy, what happened?</td></tr>
+          <tr><td><b>Contacts table</b></td><td>Owner, marketing</td><td>Everyone who did X, e.g. Botox 4+ months ago</td></tr>
+        </tbody>
+      </table></div>
+
+      <div class="mock" aria-label="Example action queue">
+        <div class="bar"><span>Action queue · today (example)</span><span>3 hot · 6 warm · 41 cold</span></div>
+        <div class="qrow"><span class="pri">P1</span><b>Ana R.</b><span class="chip hot">hot</span><span class="pri">waiting 12m · Botox</span><span>Reply now: offer 2 slots</span><span class="btn">Open chat</span></div>
+        <div class="qrow"><span class="pri">P1</span><b>Bea S.</b><span class="chip hot">hot</span><span class="pri">not booked · Filler</span><span>Close it today: send booking link</span><span class="btn">Open chat</span></div>
+        <div class="qrow"><span class="pri">P2</span><b>Carla D.</b><span class="ret">↺ returning</span><span class="pri">last visit Jun · Laser</span><span>Rebook: 4 months since last session</span><span class="btn">Open chat</span></div>
+        <div class="qrow"><span class="pri">P2</span><b>Dianne T.</b><span class="chip warm">warm</span><span class="pri">quiet 26h · Laser</span><span>Follow up with this week's promo</span><span class="btn">Open chat</span></div>
+      </div>
+
+      <div class="mock" aria-label="Example pipeline board">
+        <div class="bar"><span>Pipeline board (example)</span><span>colour = temperature</span></div>
+        <div class="kanban">
+          <div class="kcol"><h4>Inquiry · 9</h4><div class="kcard">Jen · facial</div><div class="kcard w">Kat · laser</div></div>
+          <div class="kcol"><h4>Replied · 14</h4><div class="kcard w">Dianne · laser</div><div class="kcard">Mae · filler</div></div>
+          <div class="kcol"><h4>Qualified · 5</h4><div class="kcard h">Bea · filler</div><div class="kcard h">Ana · botox</div></div>
+          <div class="kcol"><h4>Booked · 4</h4><div class="kcard h">Ivy · skin booster</div></div>
+          <div class="kcol"><h4>Showed · 2</h4><div class="kcard h">Gela · botox</div></div>
+          <div class="kcol"><h4>Paid · 3</h4><div class="kcard h">Hazel · slimming</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 08 -->
+    <section id="dashboards">
+      <h2><span class="n">08</span>Dashboards: build or reuse</h2>
+      <div class="panel">
+<pre class="mermaid">
+flowchart LR
+  subgraph ADP["Any source"]
+    direction TB
+    M1[Meta] ~~~ M2[Booking tool] ~~~ M3[Payments] ~~~ M4[Events API] ~~~ M5[CSV / Sheets]
+  end
+  ADP --> CAN[(Same tables for every source, each row tagged with its source)]
+  CAN --> VIEWS[SQL views]
+  VIEWS --> P1[Your portal: queue, pipeline, contacts, traces]
+  VIEWS --> P2[Metabase: owner charts]
+  VIEWS --> P3[Weekly digest]
+  OPS[Grafana: only your own platform health]
+</pre>
+        <p class="cap">Your decision applied: the dashboard never talks to Meta directly. Every source writes to the same tables, so a clinic with no Meta channel at all still gets a full dashboard.</p>
+      </div>
+      <div class="tbl"><table>
+        <thead><tr><th>Option</th><th>Cost</th><th>Use it for</th><th>Limits</th></tr></thead>
+        <tbody>
+          <tr><td><b>Your own portal</b></td><td>your time</td><td>Action queue, pipeline, contact timeline, branding, future SaaS</td><td>You maintain it</td></tr>
+          <tr><td><b>Metabase OSS</b></td><td>free</td><td>Owner KPI charts via signed static embeds</td><td>View-only, "Powered by Metabase" badge. Interactive embeds and row-level permissions need Pro</td></tr>
+          <tr><td><b>Grafana OSS</b></td><td>free</td><td>Your platform monitoring and alert rules</td><td>Embedding needs anonymous or public dashboards, and owners find it technical</td></tr>
+          <tr><td><b>Looker Studio / Superset</b></td><td>free</td><td>Quick reports</td><td>Extra connector or setup</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- 09 -->
+    <section id="custom">
+      <h2><span class="n">09</span>Custom per-client logic</h2>
+      <p>Use the lowest level that solves the request. Never run a client's code inside your server.</p>
+      <div class="ladder">
+        <div class="rung"><span class="lv">1</span><b>Config</b><span>Hours, SLA, keywords, prices, stage names</span><span class="who">you · minutes</span></div>
+        <div class="rung"><span class="lv">2</span><b>Custom rules (no code)</b><span>"VIP if lifetime value over ₱50,000", "hot if asks for Dr. Cruz"</span><span class="who">you · minutes</span></div>
+        <div class="rung"><span class="lv">3</span><b>Inbound events API</b><span>Their POS or payment system calls your URL: "paid ₱12,000"</span><span class="who">their dev or n8n</span></div>
+        <div class="rung"><span class="lv">4</span><b>Outbound webhooks</b><span>You call their URL on hot lead, stage change, won</span><span class="who">their dev</span></div>
+        <div class="rung"><span class="lv">5</span><b>Decision hook</b><span>You ask their URL for a score or routing, with timeout and fallback to rules</span><span class="who">their dev</span></div>
+        <div class="rung"><span class="lv">6</span><b>Adapter</b><span>Native integration with their booking or clinic system</span><span class="who">you · days</span></div>
+        <div class="rung"><span class="lv">7</span><b>n8n workflow</b><span>One-off glue, such as copying hot leads to their Google Sheet</span><span class="who">you · hours</span></div>
+      </div>
+      <div class="cols">
+        <div>
+          <h3>Example: their payment system tells you about a payment</h3>
+<pre class="code">POST /api/v1/events
+X-Api-Key: &lt;per-client key&gt;
+Idempotency-Key: pos-INV-20391
+
+{ "event_type": "payment_received",
+  "contact": { "phone": "+639171234567" },
+  "occurred_at": "2026-10-04T14:12:00+08:00",
+  "value": 12000, "currency": "PHP",
+  "props": { "invoice": "INV-20391" } }</pre>
+        </div>
+        <div>
+          <h3>Map their words to yours (client file)</h3>
+<pre class="code">event_mapping:
+  "Paid":    payment_received
+  "Arrived": appointment_showed
+  "Booked":  consult_booked
+contact_match: [psid, phone, email]
+
+custom_rules:
+  - name: vip
+    if:   { ">": [{ "var": "contact.lifetime_value" }, 50000] }
+    then: { add_tag: vip, priority: 1, notify: manager }
+
+outbound_webhooks:
+  - url: https://crm.clinic.ph/hooks/revobs
+    events: [journey.hot, journey.won]
+    secret_env: CLINIC_WEBHOOK_SECRET   # HMAC-signed</pre>
+        </div>
+      </div>
+      <p class="callout">Payment links (PayMongo, Xendit, Stripe): put the journey id in the link's metadata. Their "paid" webhook then marks the exact journey as paid with the exact amount, and nobody has to type anything.</p>
+    </section>
+
+    <!-- 10 -->
+    <section id="onboarding">
+      <h2><span class="n">10</span>Client onboarding system</h2>
+      <div class="panel">
+<pre class="mermaid">
+flowchart LR
+  A["1 Discovery<br/>45 min"] --> B["2 Workflow mapping<br/>60-90 min"] --> C["3 Connect<br/>Page, IG, booking"] --> D["4 Backfill<br/>contacts + recent chats"] --> E["5 Baseline<br/>1-2 weeks"] --> F["6 Leak report<br/>+ targets"] --> G["7 Go live<br/>alerts, queue, digest"] --> H["8 30-day review"]
+</pre>
+      </div>
+      <div class="cols">
+        <div class="panel">
+          <h3>Connecting a clinic</h3>
+          <ul class="plain" style="margin-top:8px">
+            <li><b>Now (manual):</b> the clinic adds you as Page admin or Business Manager partner. You generate a token and subscribe their Page.</li>
+            <li><b>Later (self-serve):</b> a "Connect your Page" button using Facebook Login for Business. This needs business verification and app review.</li>
+          </ul>
+          <h3 style="margin-top:12px">Booking capture (your decision 4)</h3>
+          <div class="tbl" style="margin-top:6px"><table>
+            <thead><tr><th>Clinic uses</th><th>We capture via</th></tr></thead>
+            <tbody>
+              <tr><td>Tool with webhooks (Calendly, Cal.com, clinic system)</td><td>Adapter, 1–2 days</td></tr>
+              <tr><td>Google Calendar</td><td>Calendar API sync, match by phone</td></tr>
+              <tr><td>System without API</td><td>Nightly CSV upload</td></tr>
+              <tr><td>Notebook</td><td>Our booking link (self-hosted Cal.com) or a staff "Booked" button</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+        <div class="panel">
+          <h3>Checklist per clinic</h3>
+          <ul class="plain" style="margin-top:8px">
+            <li>Contract, data processing agreement, chat consent text</li>
+            <li>Page admin or partner access</li>
+            <li>Client file from the clinic template</li>
+            <li>Webhooks: <code>messages</code>, <code>message_echoes</code>, <code>messaging_referrals</code>, <code>message_reads</code></li>
+            <li>Backfill run, past patients tagged</li>
+            <li>Booking and payment capture agreed</li>
+            <li>Alert group created, staff joined</li>
+            <li>Heartbeat on, baseline start date recorded</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11 -->
+    <section id="mapping">
+      <h2><span class="n">11</span>Translating their workflow into the system</h2>
+      <div class="panel">
+<pre class="mermaid">
+flowchart LR
+  Q1["First message to paid?"] --> O1[Stages]
+  Q2["How do you know they reached it?"] --> O2[Events]
+  Q3["Where is it written today?"] --> O3[Source + capture]
+  Q4["How fast should it be?"] --> O4[SLAs]
+  Q5["Who should know when stuck?"] --> O5[Alerts]
+  Q6["Right next move?"] --> O6[Next actions]
+  Q7["When is a returning patient a new sale?"] --> O7[New journey rule]
+  Q8["Anything only you do?"] --> O8[Custom rules / hooks]
+  O1 & O2 & O3 & O4 & O5 & O6 & O7 & O8 --> Y[(Client file)]
+</pre>
+      </div>
+      <div class="tbl"><table>
+        <thead><tr><th>Stage</th><th>Proof</th><th>Lives today</th><th>Capture</th><th>SLA / metric</th><th>Alert</th><th>Next action</th></tr></thead>
+        <tbody>
+          <tr><td>Inquiry</td><td>first message</td><td>Messenger / IG</td><td>webhook</td><td>volume by source</td><td>–</td><td>–</td></tr>
+          <tr><td>Replied</td><td>first reply</td><td>inbox</td><td>echo webhook</td><td>≤ 5 min open hours</td><td>hot 10m</td><td>reply + ask date</td></tr>
+          <tr><td>Qualified</td><td>asks date or location</td><td>chat</td><td>classifier</td><td>qualified rate</td><td>–</td><td>offer 2 slots</td></tr>
+          <tr><td>Booked</td><td>appointment</td><td>booking tool</td><td>adapter / button</td><td>inquiry → booked</td><td>–</td><td>reminders</td></tr>
+          <tr><td>Showed</td><td>arrived</td><td>front desk</td><td>button / clinic system</td><td>show rate</td><td>no-show 15m</td><td>rebook</td></tr>
+          <tr><td>Paid</td><td>payment</td><td>POS / GCash</td><td>payment webhook / events API</td><td>revenue per ad</td><td>–</td><td>rebook date</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- 12 -->
+    <section id="wa">
+      <h2><span class="n">12</span>WhatsApp and Viber</h2>
+      <div class="cols">
+        <div class="panel">
+          <h3>WhatsApp</h3>
+          <ul class="plain" style="margin-top:8px">
+            <li><b>Coexistence</b> (recommended for clinics): staff keep the WhatsApp Business phone app. You get patient messages, <code>smb_message_echoes</code> for phone replies, and a one-time history of up to ~6 months. Onboard through Embedded Signup or a provider such as 360dialog.</li>
+            <li><b>Cloud API only:</b> every reply goes through your tool, so you see everything, but the number leaves the phone app.</li>
+            <li><b>Personal WhatsApp:</b> not trackable.</li>
+            <li>Free replies within 24h of the patient's last message. After that only paid, pre-approved templates.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h3>Viber</h3>
+          <ul class="plain" style="margin-top:8px">
+            <li><b>Viber bot</b> (REST API): patient messages arrive by webhook, but staff replies are only seen if they reply through your tool. There's no echo from a phone.</li>
+            <li><b>Cost:</b> bots created since 5 Feb 2024 pay a monthly fee (Viber lists EUR 100–115 per bot) plus bot-initiated messages. Messages within a 24h session the user starts are free.</li>
+            <li><b>Business Messages:</b> phone-number messaging through Viber partners, mainly for reminders.</li>
+            <li><b>Recommendation:</b> skip Viber until a clinic pays for it.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 13 -->
+    <section id="selftest">
+      <h2><span class="n">13</span>Test it with your own Facebook Page</h2>
+      <div class="panel">
+<pre class="mermaid">
+flowchart LR
+  P([You, personal account]) -->|message| PG[Your Page]
+  PG --> MA[Meta app, development mode]
+  MA -->|webhook| TU[cloudflared tunnel]
+  TU --> LP[POC on your laptop]
+  LP --> DB[(Postgres)]
+  BS([You in Business Suite]) -->|reply| PG
+</pre>
+      </div>
+      <ol class="steps">
+        <li><span>Run Postgres and <code>uvicorn app.main:app --port 8000</code>.</span></li>
+        <li><span>Run <code>cloudflared tunnel --url http://localhost:8000</code> and copy the https URL.</span></li>
+        <li><span>On developers.facebook.com, create a Business app and add Messenger.</span></li>
+        <li><span>Set the webhook to <code>https://…/webhooks/meta</code> with your verify token, and copy the app secret.</span></li>
+        <li><span>Add your Page, generate a token, and subscribe to <code>messages</code>, <code>message_echoes</code>, <code>messaging_referrals</code> and <code>message_reads</code>.</span></li>
+        <li><span>Message your Page, reply from Business Suite, and check that both rows and the reply time appear.</span></li>
+      </ol>
+      <p class="muted">No app review is needed: in development mode the app gets messages from people with a role on it, which includes you.</p>
+    </section>
+
+    <!-- 14 -->
+    <section id="scale">
+      <h2><span class="n">14</span>Scalability and cost</h2>
+      <p>A busy clinic sends about 8,000 webhooks a month, roughly one every 5 minutes. Fifty clinics fit on one VPS and one Postgres database.</p>
+      <div class="tbl"><table>
+        <thead><tr><th>Item</th><th>POC</th><th>~10 clinics</th><th>~50 clinics</th></tr></thead>
+        <tbody>
+          <tr><td>VPS + Postgres</td><td>$0</td><td>$12–24/mo</td><td>$40–80/mo</td></tr>
+          <tr><td>Metabase OSS, Grafana OSS</td><td>$0</td><td>$0</td><td>$0</td></tr>
+          <tr><td>Meta webhooks and APIs</td><td>$0</td><td>$0</td><td>$0</td></tr>
+          <tr><td>WhatsApp templates</td><td>–</td><td colspan="2">per message, outside the 24h window only</td></tr>
+          <tr><td>LLM for unclear leads</td><td>~$0–5</td><td colspan="2">~$10–20 per clinic per month on Claude Opus 5.5; about a quarter of that on a smaller model</td></tr>
+        </tbody>
+      </table></div>
+      <div class="panel">
+<pre class="mermaid">
+flowchart LR
+  A["POC: inline"] --> B["First clinics: queue + worker"] --> C["10+: cron alerts, cached views"] --> D["50+: partitions, read replica, row-level security"] --> E["SaaS: self-serve connect"]
+</pre>
+      </div>
+    </section>
+
+    <!-- 15 -->
+    <section id="risks">
+      <h2><span class="n">15</span>Risks</h2>
+      <div class="tbl"><table>
+        <thead><tr><th>Risk</th><th>Mitigation</th></tr></thead>
+        <tbody>
+          <tr><td>App review and business verification for clinics' Pages</td><td>Start in week 1; use manual partner access meanwhile</td></tr>
+          <tr><td>Only the last 20 messages per conversation can be pulled</td><td>Use backfill for contacts and context, and take the baseline from live data</td></tr>
+          <tr><td>Tokens expire or access is removed</td><td>"Silent for 6h" alert to you</td></tr>
+          <tr><td>Wrong merges of returning patients</td><td>Auto-merge only on exact id, phone or email</td></tr>
+          <tr><td>Health data privacy</td><td>DPA, consent, retention rules, phone numbers redacted before any LLM call</td></tr>
+          <tr><td>Custom requests eat margin</td><td>The levels in section 09, with adapters and hooks sold as add-ons</td></tr>
+          <tr><td>Wrong labels</td><td>Explainable rules, checked against 100 hand-labelled chats</td></tr>
+        </tbody>
+      </table></div>
+    </section>
+
+    <!-- 16 -->
+    <section id="council">
+      <h2><span class="n">16</span>LLM council review</h2>
+      <p class="muted">Simulated advisor perspectives used to stress-test the plan. They are not real people.</p>
+      <div class="council">
+        <div class="voice"><span class="who">Clinic owner</span><q>Stop losing night inquiries and show me which ads bring patients. Don't make my staff learn a new inbox. The queue on a phone matters more than charts. Show me returning patients, since rebooking is my profit.</q><span class="then">→ Mobile-first action queue and returning-patient view in v1. Keep the Meta inbox.</span></div>
+        <div class="voice"><span class="who">Meta platform engineer</span><q>Echoes and referrals are solid. Don't promise full Messenger history, because it's 20 messages per chat. Verification gates every Page that isn't yours, so start now. Pin a Graph API version.</q><span class="then">→ Backfill means contacts plus context. Verification is on the critical path.</span></div>
+        <div class="voice"><span class="who">Data engineer</span><q>Split contacts from journeys before real data arrives, or returning patients will distort the funnel. Keep events append-only and every metric a view. Put the client id and row-level security in from the first client.</q><span class="then">→ The schema split is the first coding task after this plan.</span></div>
+        <div class="voice"><span class="who">Product designer</span><q>Four views, four jobs. Use the same chips and stage names everywhere. Charts go in the digest and owner view, not on the front desk's screen.</q><span class="then">→ Build the portal around the queue. Metabase is for owners only.</span></div>
+        <div class="voice"><span class="who">Privacy counsel</span><q>Backfilling months of health chats is a big step. Get consent wording, keep only what you need, and set retention. Decision hooks send patient data to other URLs and need contracts.</q><span class="then">→ Retention policy and DPA before the first backfill.</span></div>
+        <div class="voice"><span class="who">Agency operator</span><q>Custom requests kill margins. Sell config plus the events API as standard, and price adapters and hooks as add-ons. Skip Viber until someone pays.</q><span class="then">→ Packages: Standard, Plus, Custom.</span></div>
+      </div>
+      <p class="callout"><b>Agreement:</b> start with Messenger and Instagram on your own Page, split contacts and journeys early, build the action queue first, start verification early, and leave Viber for later. <b>Disagreement:</b> the owner wants the AI responder soon, while the engineer and counsel want stable measurement first. The middle path is the AI responder in phase 2, after two weeks of clean baseline data.</p>
+    </section>
+
+    <!-- 17 -->
+    <section id="roadmap">
+      <h2><span class="n">17</span>Roadmap</h2>
+      <div class="tbl"><table>
+        <thead><tr><th>Week</th><th>Goal</th><th>Done when</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">0 ✓</td><td>Engine, simulator, sample dashboard</td><td>Runs on simulated data</td></tr>
+          <tr><td class="mono">1</td><td>Your Page live + profile names; start business verification</td><td>Real message and reply land with the right reply time</td></tr>
+          <tr><td class="mono">2</td><td>Contacts and journeys split + backfill</td><td>Returning-patient test passes on your Page</td></tr>
+          <tr><td class="mono">3</td><td>Events API + booking adapter or "Booked/Arrived/Paid" buttons</td><td>Bookings and payments recorded from any source</td></tr>
+          <tr><td class="mono">4</td><td>Portal v1: queue, pipeline, contact profile</td><td>Usable on a phone</td></tr>
+          <tr><td class="mono">5</td><td>Alerts, weekly digest, label check</td><td>100 labelled chats measured</td></tr>
+          <tr><td class="mono">6+</td><td>First design-partner clinic</td><td>Baseline running on a real clinic</td></tr>
+        </tbody>
+      </table></div>
+      <h3>Smaller choices still open</h3>
+      <ol class="steps">
+        <li><span>Portal tech: FastAPI + HTMX (simplest, recommended) or Next.js.</span></li>
+        <li><span>New-journey gap for clinics: 45 days?</span></li>
+        <li><span>Which custom levels are standard and which are add-ons.</span></li>
+        <li><span>When to start Meta business verification (recommended: week 1).</span></li>
+      </ol>
+    </section>
+
+    <!-- 18 -->
+    <section id="refs">
+      <h2><span class="n">18</span>References</h2>
+      <div class="refs">
+        <h3>Messenger and Instagram</h3>
+        <ul>
+          <li><a href="https://developers.facebook.com/documentation/business-messaging/messenger-platform/webhooks">Webhooks for Messenger Platform</a></li>
+          <li><a href="https://developers.facebook.com/docs/messenger-platform/reference/webhook-events/messages/">messages webhook event</a></li>
+          <li><a href="https://developers.facebook.com/documentation/business-messaging/messenger-platform/getting-started/quick-start">Messenger quick start</a></li>
+          <li><a href="https://developers.facebook.com/docs/messenger-platform/conversations/">Conversations API (history)</a></li>
+          <li><a href="https://developers.facebook.com/documentation/business-messaging/messenger-platform/send-messages">Send messages</a></li>
+          <li><a href="https://developers.facebook.com/documentation/business-messaging/messenger-platform/policy">Messaging policy: 24h window and tags</a></li>
+          <li><a href="https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/messaging-api/">Instagram messaging</a></li>
+          <li><a href="https://developers.facebook.com/documentation/ads-commerce/marketing-api/guides/lead-ads/retrieving">Lead Ads retrieval</a></li>
+        </ul>
+        <h3>WhatsApp</h3>
+        <ul>
+          <li><a href="https://developers.facebook.com/documentation/business-messaging/whatsapp/embedded-signup/onboarding-business-app-users/">Onboard WhatsApp Business app users (Coexistence)</a></li>
+          <li><a href="https://docs.360dialog.com/partner/onboarding/whatsapp-coexistence/coexistence-webhooks">360dialog: coexistence webhooks</a></li>
+        </ul>
+        <h3>Viber</h3>
+        <ul>
+          <li><a href="https://developers.viber.com/docs/api/rest-bot-api/">Viber REST Bot API</a></li>
+          <li><a href="https://help.viber.com/hc/en-us/articles/15247629658525-Bot-commercial-model">Viber bot commercial model</a></li>
+        </ul>
+        <h3>Dashboards and inbox</h3>
+        <ul>
+          <li><a href="https://www.metabase.com/docs/latest/embedding/securing-embeds">Metabase: securing embeds</a></li>
+          <li><a href="https://grafana.com/docs/grafana/latest/dashboards/share-dashboards-panels/">Grafana: sharing dashboards</a></li>
+          <li><a href="https://developers.chatwoot.com/api-reference/webhooks/add-a-webhook">Chatwoot webhooks</a></li>
+        </ul>
+      </div>
+      <p class="muted">Some Meta pages couldn't be opened directly from the build environment, so those facts come from Meta's documentation as shown in search results. Re-check field names against the Graph API version you pin.</p>
+    </section>
+  </main>
+</div>

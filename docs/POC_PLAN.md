@@ -592,8 +592,11 @@ Growth path: inline → queue + worker → cron alerts + cached views → monthl
 | A clinic system with no API | Nightly CSV export upload, matched by phone | 1 day |
 | Notebook / nothing | Offer our own booking link (self-hosted Cal.com, free) **or** a Telegram "Booked" button for staff | Hours |
 
+**Frontend decision:** our own app, not an existing dashboard tool. FastAPI + Jinja + HTMX, with Apache ECharts for charts. The clickable mockup in `docs/mockups/client-app.html` is the visual spec. Metabase and Grafana are not part of the POC; Metabase can be added later for owner analytics, and Grafana only for monitoring our own platform.
+
+**Build guide:** `docs/POC_IMPLEMENTATION.md` breaks the POC into six milestones with tasks and "done when" checks.
+
 **Remaining choices (smaller):**
-1. Portal tech: server-rendered FastAPI + HTMX (simplest, recommended) or Next.js?
 2. `new_journey_after_days` for clinics: 45 days?
 3. Which custom levels (section 10) to sell as standard vs add-on?
 
