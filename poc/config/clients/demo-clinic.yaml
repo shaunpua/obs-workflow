@@ -1,0 +1,37 @@
+# Client file: only what is different for THIS client.
+# Everything else is inherited from config/niches/<niche>.yaml.
+
+client_id: demo-clinic
+name: "Glow Aesthetics (demo)"
+niche: clinic
+timezone: Asia/Manila
+
+business_hours:
+  open: "09:00"
+  close: "20:00"
+  days: [1, 2, 3, 4, 5, 6]        # Mon-Sat; closed Sunday
+
+# Which Page / IG account / WhatsApp number belong to this client.
+channels:
+  messenger: { external_id: "PAGE_GLOW_001" }
+  instagram: { external_id: "IG_GLOW_001" }
+  whatsapp:  { external_id: "WA_PNID_GLOW_001" }
+
+# Your own Meta app id. Echoes carrying this app_id were sent by your AI;
+# any other app_id (Meta Business Suite inbox, phone app) means a human sent it.
+ai_app_id: "APP_REVOBS_AI"
+
+# Per-client customisations layered over the niche pack.
+overrides:
+  sla:
+    hot_unanswered_alert_minutes: 10
+  interests:
+    botox: { value: 15000 }                     # this clinic charges more
+    skin_booster: { keywords: ["skin booster", "rejuran", "glass skin"], value: 18000 }
+  classification:
+    signals:
+      asks_promo: { weight: 10, patterns: ["promo", "sale", "discount", "free consult"] }
+
+alerts:
+  front_desk: { channel: telegram, chat_id_env: TELEGRAM_FRONTDESK_CHAT_ID }
+  manager:    { channel: telegram, chat_id_env: TELEGRAM_MANAGER_CHAT_ID }

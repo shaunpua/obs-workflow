@@ -1,0 +1,82 @@
+# Niche pack: aesthetic / dental clinic.
+# A niche pack holds the defaults shared by every client in a niche.
+# Client files (config/clients/*.yaml) override any key here.
+
+niche: clinic
+
+# Ordered funnel. Each stage is reached when one of its events happens.
+stages:
+  - { key: inquiry,   label: "Inquiry",        events: [lead_created] }
+  - { key: engaged,   label: "Replied",        events: [first_reply] }
+  - { key: qualified, label: "Qualified",      events: [lead_qualified] }
+  - { key: booked,    label: "Consult booked", events: [consult_booked] }
+  - { key: showed,    label: "Showed up",      events: [appointment_showed] }
+  - { key: paid,      label: "Paid",           events: [payment_received] }
+
+# What counts as a service the customer is interested in, and its typical value (PHP).
+interests:
+  botox:   { keywords: ["botox", "wrinkle", "jaw slim", "kunot"],          value: 12000 }
+  filler:  { keywords: ["filler", "lip", "nose lift", "chin"],             value: 25000 }
+  laser:   { keywords: ["laser", "pico", "pekas", "melasma", "hair removal"], value: 8000 }
+  facial:  { keywords: ["facial", "hydrafacial", "acne", "pimple"],         value: 3500 }
+  slimming: { keywords: ["slim", "fat", "taba", "body contour"],           value: 30000 }
+
+# Rule-based scoring. Each matched signal adds its weight to the lead score.
+# The LLM (optional) handles the ambiguous middle; rules handle the obvious.
+classification:
+  signals:
+    asks_availability: { weight: 35, patterns: ["available", "avail", "bakante", "slot", "schedule", "sched", "bukas", "tomorrow", "today", "ngayon", "saturday", "sunday", "weekend"] }
+    asks_to_book:      { weight: 45, patterns: ["book", "pa-book", "pabook", "reserve", "appointment", "appt", "magpa-sched"] }
+    asks_location:     { weight: 20, patterns: ["saan", "where", "location", "address", "branch", "parking"] }
+    mentions_budget:   { weight: 15, patterns: ["budget", "afford", "installment", "hulugan", "gcash", "card"] }
+    asks_details:      { weight: 15, patterns: ["how long", "ilang session", "sessions", "results", "masakit", "pain", "downtime", "safe"] }
+    price_only:        { weight: 8,  patterns: ["hm", "how much", "magkano", "price", "presyo", "rate"] }
+    not_now:           { weight: -25, patterns: ["next month", "sa sweldo", "pag-iisipan", "think about", "later", "maybe"] }
+    gone_cold:         { weight: -40, patterns: ["mahal", "too expensive", "nevermind", "wag na", "no thanks"] }
+  thresholds: { hot: 50, warm: 20 }      # score >= hot -> hot; >= warm -> warm; else cold
+  decay_days: 3                           # no customer message for N days -> drop one level
+  qualified_when: { require_interest: true, any_signal: [asks_availability, asks_to_book, mentions_budget] }
+
+# Service levels you promise the owner. Alerts fire when these are broken.
+sla:
+  first_reply_minutes: 5
+  hot_unanswered_alert_minutes: 10
+  escalation_minutes: 30
+
+# Ordered "what to do next" rules. The first match wins.
+next_actions:
+  - when: { awaiting_reply: true, temperature: hot }
+    action: "Reply now: confirm the treatment and offer 2 time slots"
+    priority: 1
+  - when: { awaiting_reply: true, idle_hours: 48 }
+    action: "Never answered: apologise, re-offer, ask for preferred date"
+    priority: 2
+  - when: { awaiting_reply: true }
+    action: "Reply within SLA: answer, then ask for preferred date"
+    priority: 2
+  - when: { temperature: hot, stage: qualified }
+    action: "Close it today: send 2 slots + booking link"
+    priority: 1
+  - when: { stage: booked }
+    action: "Send reminder 24h and 2h before the consult"
+    priority: 3
+  - when: { stage: qualified, idle_hours: 24 }
+    action: "Follow up with a booking link and this week's promo"
+    priority: 2
+  - when: { temperature: warm, idle_hours: 48 }
+    action: "Nurture: send before/after results + price range"
+    priority: 3
+  - when: { temperature: cold }
+    action: "Add to monthly promo list"
+    priority: 4
+  - when: { stage: showed }
+    action: "Ask for payment / package; schedule rebook date"
+    priority: 2
+  - when: {}
+    action: "No action needed"
+    priority: 5
+
+# Guardrails for the AI responder (used later, when it replies on its own).
+ai_responder:
+  never_discuss: ["diagnosis", "medication", "pregnancy", "allergy"]
+  handoff_keywords: ["doctor", "pain", "allergy", "complaint", "refund"]

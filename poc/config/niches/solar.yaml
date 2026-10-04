@@ -1,0 +1,56 @@
+# Niche pack: residential solar installer.
+# Same engine, different stages, keywords and values. Shows that adding a niche
+# is a config file, not new code.
+
+niche: solar
+
+stages:
+  - { key: inquiry,   label: "Inquiry",          events: [lead_created] }
+  - { key: engaged,   label: "Replied",          events: [first_reply] }
+  - { key: qualified, label: "Bill received",    events: [lead_qualified, bill_received] }
+  - { key: proposal,  label: "Proposal sent",    events: [proposal_sent] }
+  - { key: survey,    label: "Site survey done", events: [site_survey_done] }
+  - { key: signed,    label: "Contract signed",  events: [contract_signed] }
+
+interests:
+  grid_tie: { keywords: ["grid", "net meter", "net-meter", "bawas bill", "kuryente"], value: 280000 }
+  hybrid:   { keywords: ["hybrid", "battery", "brownout", "backup"],                  value: 450000 }
+  off_grid: { keywords: ["off grid", "off-grid", "farm", "probinsya"],               value: 380000 }
+
+classification:
+  signals:
+    shares_bill:       { weight: 40, patterns: ["bill", "meralco", "kwh", "electric bill", "bayad sa kuryente"] }
+    asks_survey:       { weight: 40, patterns: ["survey", "inspect", "visit", "punta kayo", "site"] }
+    owns_home:         { weight: 15, patterns: ["own house", "sariling bahay", "roof", "bubong"] }
+    asks_financing:    { weight: 20, patterns: ["installment", "financing", "loan", "hulugan", "0%"] }
+    price_only:        { weight: 8,  patterns: ["hm", "how much", "magkano", "price"] }
+    renter:            { weight: -40, patterns: ["renting", "nangungupahan", "apartment", "condo"] }
+    not_now:           { weight: -25, patterns: ["next year", "pag-iisipan", "later", "maybe"] }
+  thresholds: { hot: 50, warm: 20 }
+  decay_days: 7
+  qualified_when: { require_interest: false, any_signal: [shares_bill] }
+
+sla:
+  first_reply_minutes: 15
+  hot_unanswered_alert_minutes: 30
+  escalation_minutes: 120
+
+next_actions:
+  - when: { awaiting_reply: true, temperature: hot }
+    action: "Reply now: ask for the latest electric bill photo"
+    priority: 1
+  - when: { awaiting_reply: true }
+    action: "Reply within SLA"
+    priority: 2
+  - when: { stage: qualified, idle_hours: 24 }
+    action: "Send preliminary sizing + savings estimate"
+    priority: 1
+  - when: { stage: proposal, idle_hours: 72 }
+    action: "Follow up on proposal; offer site survey"
+    priority: 2
+  - when: { temperature: cold }
+    action: "Add to quarterly nurture (savings stories)"
+    priority: 4
+  - when: {}
+    action: "No action needed"
+    priority: 5

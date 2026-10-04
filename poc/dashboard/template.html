@@ -1,0 +1,461 @@
+<title>Lead Leak Monitor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a front-desk ops console. Tabs across the top, summary first, detail below. */
+:root {
+  --bg: #f4f6f4; --surface: #ffffff; --ink: #141816; --ink-2: #4b524d; --muted: #737a75; --line: #dde2de;
+  --accent: #0f6b5c; --accent-soft: #e2f0ec;
+  --s1: #2a78d6; --s2: #eb6834; --band: #eef0ee;
+  --hot: #d03b3b; --warm: #b77a00; --cold: #5d7392; --good: #0ca30c;
+  --f-display: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --f-body: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111412; --surface: #191d1a; --ink: #edf1ee; --ink-2: #b6bdb7; --muted: #8a918b; --line: #2b312d;
+  --accent: #52c3ad; --accent-soft: #1b2e29; --s1: #3987e5; --s2: #d95926; --band: #1f2420;
+  --hot: #e66767; --warm: #fab219; --cold: #8fa6c6; --good: #3fbf3f; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #111412; --surface: #191d1a; --ink: #edf1ee; --ink-2: #b6bdb7; --muted: #8a918b; --line: #2b312d;
+  --accent: #52c3ad; --accent-soft: #1b2e29; --s1: #3987e5; --s2: #d95926; --band: #1f2420;
+  --hot: #e66767; --warm: #fab219; --cold: #8fa6c6; --good: #3fbf3f; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--f-body); }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 48px; }
+header.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; }
+h1 { font: 800 1.7rem/1.15 var(--f-display); margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+h2 { font: 700 1.2rem/1.25 var(--f-display); margin: 0 0 4px; text-wrap: balance; }
+h3 { font: 700 1rem/1.3 var(--f-display); margin: 0 0 4px; }
+.eyebrow { font: 600 0.72rem/1 var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.sub { color: var(--ink-2); margin: 4px 0 0; max-width: 68ch; }
+.mono, .num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+
+nav.tabs { display: flex; gap: 4px; margin: 20px 0 18px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+nav.tabs button { font: 600 0.92rem var(--f-body); color: var(--ink-2); background: none; border: 0; padding: 10px 12px;
+  border-bottom: 2px solid transparent; cursor: pointer; white-space: nowrap; }
+nav.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+nav.tabs button:focus-visible, .chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+section.panel { display: grid; gap: 18px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: 18px; }
+.note { color: var(--ink-2); font-size: 0.88rem; margin: 6px 0 0; }
+
+/* KPI strip: before vs after */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 12px; }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 6px; }
+.kpi .label { font-size: 0.82rem; color: var(--ink-2); }
+.kpi .val { font: 600 1.6rem/1 var(--f-mono); font-variant-numeric: tabular-nums; }
+.kpi .was { font: 0.8rem var(--f-mono); color: var(--muted); }
+.delta-good { color: var(--good); } .delta-bad { color: var(--hot); }
+
+/* charts */
+.chart { width: 100%; overflow-x: auto; }
+.chart svg { display: block; width: 100%; height: auto; min-width: 520px; }
+#hourChart svg { min-width: 340px; }
+svg text { fill: var(--muted); font: 11px var(--f-mono); }
+svg .grid { stroke: var(--line); stroke-width: 1; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.82rem; color: var(--ink-2); margin-top: 6px; }
+.legend i { display: inline-block; width: 12px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+.legend i.box { height: 10px; width: 10px; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font: 12px/1.4 var(--f-mono);
+  padding: 7px 9px; border-radius: 6px; max-width: 260px; z-index: 10; }
+
+/* funnel */
+.funnel { display: grid; gap: 8px; }
+.frow { display: grid; grid-template-columns: 130px 1fr 150px; gap: 10px; align-items: center; }
+.frow .bar { height: 22px; background: var(--s1); border-radius: 0 4px 4px 0; min-width: 2px; }
+.frow .lab { font-size: 0.88rem; }
+.frow .stat { font: 0.8rem var(--f-mono); color: var(--ink-2); }
+.frow.leak .stat b { color: var(--hot); }
+.step { font: 0.75rem var(--f-mono); color: var(--muted); padding-left: 140px; }
+
+/* tables */
+.tbl { width: 100%; overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
+th { text-align: left; font: 600 0.72rem var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+  border-bottom: 1px solid var(--line); padding: 6px 8px; white-space: nowrap; }
+td { border-bottom: 1px solid var(--line); padding: 8px; vertical-align: top; }
+td.num, th.num { text-align: right; }
+.chip { display: inline-flex; align-items: center; gap: 5px; font: 600 0.75rem var(--f-mono); padding: 2px 8px; border-radius: 999px;
+  border: 1px solid currentColor; white-space: nowrap; }
+.chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.t-hot { color: var(--hot); } .t-warm { color: var(--warm); } .t-cold { color: var(--cold); }
+.p1 { font-weight: 700; }
+.pri { font: 600 0.72rem var(--f-mono); color: var(--muted); }
+
+/* trace */
+.traces { display: grid; gap: 18px; }
+.trace-head { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: baseline; margin-bottom: 10px; }
+.span { display: grid; grid-template-columns: 92px 84px 1fr; gap: 10px; padding: 6px 0; border-top: 1px dashed var(--line); align-items: start; }
+.span .when { font: 0.78rem var(--f-mono); color: var(--muted); }
+.span .gap { font: 600 0.78rem var(--f-mono); }
+.gapbar { height: 4px; border-radius: 2px; background: var(--line); margin-top: 4px; }
+.gapbar > i { display: block; height: 100%; border-radius: 2px; background: var(--ink-2); }
+.span.slow .gap { color: var(--hot); } .span.slow .gapbar > i { background: var(--hot); }
+.kind { font: 600 0.72rem var(--f-mono); text-transform: uppercase; letter-spacing: 0.05em; margin-right: 6px; }
+.k-customer { color: var(--s1); } .k-staff { color: var(--accent); } .k-ai { color: var(--s2); } .k-system { color: var(--muted); } .k-alert { color: var(--hot); }
+.span .txt { min-width: 0; overflow-wrap: anywhere; }
+
+/* explainer */
+.flowcard pre.mermaid { background: transparent; margin: 0; overflow-x: auto; }
+.steps { display: grid; gap: 10px; counter-reset: s; padding: 0; margin: 0; list-style: none; }
+.steps li { display: grid; grid-template-columns: 30px 1fr; gap: 10px; }
+.steps li::before { counter-increment: s; content: counter(s); font: 700 0.85rem var(--f-mono); color: var(--accent);
+  background: var(--accent-soft); border-radius: 50%; width: 26px; height: 26px; display: grid; place-items: center; }
+.map { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 12px; }
+.map div { border-left: 3px solid var(--accent); padding: 4px 0 4px 12px; }
+.map p { margin: 2px 0 0; font-size: 0.88rem; color: var(--ink-2); }
+code { font: 0.85em var(--f-mono); background: var(--band); padding: 1px 5px; border-radius: 4px; }
+@media (max-width: 560px) {
+  .frow { grid-template-columns: 90px 1fr; } .frow .stat { grid-column: 2; } .step { padding-left: 0; }
+  .span { grid-template-columns: 74px 1fr; } .span .txt { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: no-preference) { nav.tabs button { transition: color .15s, border-color .15s; } }
+</style>
+<!--__MERMAID__-->
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow" id="eyebrow">Proof of concept · sample data</div>
+      <h1 id="title">Lead Leak Monitor</h1>
+      <p class="sub" id="subtitle"></p>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button role="tab" id="tab-how" aria-selected="true" data-panel="how">How it works</button>
+    <button role="tab" id="tab-owner" aria-selected="false" data-panel="owner">Owner view</button>
+    <button role="tab" id="tab-queue" aria-selected="false" data-panel="queue">Action queue</button>
+    <button role="tab" id="tab-traces" aria-selected="false" data-panel="traces">Lead traces</button>
+  </nav>
+
+  <!-- ===================================================== HOW IT WORKS -->
+  <section class="panel" id="how">
+    <div class="card flowcard">
+      <h2>The whole flow</h2>
+      <p class="note">Meta sends your server a webhook for every customer message and for every reply your Page sends. Your server keeps a copy, works out who the lead is, and updates the metrics, the hot/warm/cold label and the next action. It also checks whether an alert should go out.</p>
+      <pre class="mermaid">
+flowchart LR
+  C([Customer]) -->|DM / WhatsApp| M[Meta servers]
+  S([Staff in inbox / phone]) -->|reply| M
+  AI([Your AI responder]) -->|reply via Send API| M
+  M -->|webhook: messages| W[Your webhook endpoint]
+  M -->|webhook: message_echoes| W
+  W --> R[(raw_webhooks)]
+  R --> N[Normalize to one shape]
+  N --> L[(leads)]
+  N --> MS[(messages)]
+  N --> EV[(events = traces)]
+  MS --> MET[Metrics views: reply time p50/p90]
+  MS --> CL[Classifier: rules + optional LLM]
+  CL --> L
+  L --> NA[Next action]
+  L --> AL[Alert check every minute]
+  AL -->|Telegram / Viber| S
+  MET --> D[Dashboard]
+  NA --> D
+  EV --> D
+      </pre>
+    </div>
+
+    <div class="grid2">
+      <div class="card flowcard">
+        <h3>One message, start to finish</h3>
+        <p class="note">How response time is measured with no extra work for staff.</p>
+        <pre class="mermaid">
+sequenceDiagram
+  participant C as Customer
+  participant M as Meta
+  participant W as Your server
+  participant DB as Postgres
+  participant T as Front desk (Telegram)
+  C->>M: "Available po bukas? Pa-book"
+  M->>W: messages webhook (21:14:05)
+  W->>DB: store raw, message, lead
+  W->>DB: score = 80 → HOT, waiting since 21:14
+  Note over W,T: 10 business minutes pass, no reply
+  W->>T: HOT lead waiting 10 min
+  T->>M: staff replies in Business Suite
+  M->>W: message_echoes webhook (09:12:40)
+  W->>DB: reply time = 11h 58m raw, 12m business
+        </pre>
+      </div>
+      <div class="card">
+        <h3>What you get from each webhook</h3>
+        <div class="map">
+          <div><b>Metric logs</b><p>Every message has a timestamp. Reply time is your reply minus the first unanswered customer message.</p></div>
+          <div><b>Classification</b><p>Keyword signals score each lead hot, warm or cold. An LLM is only asked about unclear cases.</p></div>
+          <div><b>Traces</b><p>Each lead's messages and events in time order. The gaps between them show where time goes.</p></div>
+          <div><b>Bottlenecks</b><p>Funnel drop-off per stage and the median time spent in each step.</p></div>
+          <div><b>Actions</b><p>Ordered rules turn state into "what to do now", e.g. "Hot, waiting: offer 2 slots".</p></div>
+          <div><b>Alerts</b><p>A hot lead unanswered for 10 minutes pings the front desk. At 30 minutes it goes to the manager.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card flowcard">
+        <h3>A lead's stages (clinic config)</h3>
+        <p class="note">Stages come from a YAML file per niche, so solar or real estate only needs a different file.</p>
+        <pre class="mermaid">
+flowchart LR
+  A[Inquiry] --> B[Replied] --> Q[Qualified] --> K[Consult booked] --> S[Showed up] --> P[Paid]
+  A -. no reply .-> X1((leak))
+  B -. ghosted after price .-> X2((leak))
+  K -. no-show .-> X3((leak))
+        </pre>
+      </div>
+      <div class="card">
+        <h3>Test it with your own Facebook Page</h3>
+        <ol class="steps">
+          <li><span>Run this kit on your laptop: Postgres plus the Python app.</span></li>
+          <li><span>Expose it with a free tunnel such as <code>cloudflared</code> or <code>ngrok</code>, which gives you an https URL.</span></li>
+          <li><span>Create a Meta app (Business type), add Messenger, and paste the URL and verify token into Webhooks.</span></li>
+          <li><span>Generate a Page token and subscribe the Page to <code>messages</code> and <code>message_echoes</code>.</span></li>
+          <li><span>Message your Page from your personal account, then reply from Business Suite.</span></li>
+          <li><span>Run <code>build_dashboard</code> and both timestamps appear here.</span></li>
+        </ol>
+        <p class="note">Development mode only receives messages from people with a role on the app (you, or testers you add). That is enough for testing, and no app review is needed.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================================================== OWNER VIEW -->
+  <section class="panel" id="owner" hidden>
+    <div>
+      <h2>Before vs after the after-hours AI</h2>
+      <p class="note" id="periodNote"></p>
+    </div>
+    <div class="kpis" id="kpis"></div>
+
+    <div class="card">
+      <h3>First reply time per day</h3>
+      <p class="note">Log scale. p50 is a typical customer's wait and p90 is the worst 10%. The dashed line marks when after-hours AI replies started.</p>
+      <div class="chart" id="frtChart"></div>
+      <div class="legend"><span><i style="background:var(--s1)"></i>p50 (median)</span><span><i style="background:var(--s2)"></i>p90</span></div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>When inquiries arrive</h3>
+        <p class="note">New conversations by hour of day. The shaded hours are when the clinic is closed. Hover to see the median wait and how many never got an answer.</p>
+        <div class="chart" id="hourChart"></div>
+      </div>
+      <div class="card">
+        <h3>Funnel and bottlenecks</h3>
+        <p class="note">How many leads reached each stage, the share kept from the previous stage, and the median time each step took.</p>
+        <div class="funnel" id="funnel"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Which ads bring paying customers</h3>
+      <div class="tbl"><table id="sources"></table></div>
+      <p class="note">The ad id comes from the referral object on the first message of a click-to-Messenger ad.</p>
+    </div>
+  </section>
+
+  <!-- ===================================================== QUEUE -->
+  <section class="panel" id="queue" hidden>
+    <div>
+      <h2>What to do next</h2>
+      <p class="note">Sorted by priority. Each row is one lead from the lead database with its current label and the action the rules picked.</p>
+    </div>
+    <div class="kpis" id="tempTiles"></div>
+    <div class="card"><div class="tbl"><table id="queueTbl"></table></div></div>
+    <div class="card">
+      <h3>Recent alerts</h3>
+      <div class="tbl"><table id="alertTbl"></table></div>
+    </div>
+  </section>
+
+  <!-- ===================================================== TRACES -->
+  <section class="panel" id="traces" hidden>
+    <div>
+      <h2>Lead traces</h2>
+      <p class="note">Each lead's journey on one timeline, the way a request trace looks in observability tools. The bars show the gap since the previous step, and red marks a wait longer than the SLA.</p>
+    </div>
+    <div class="traces" id="traceList"></div>
+  </section>
+</div>
+<div id="tip" hidden></div>
+
+<script>
+const DATA = /*__DATA__*/null;
+
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const peso = (v) => "₱" + Math.round(v || 0).toLocaleString("en-PH");
+function fmtMin(m) {
+  if (m == null) return "never";
+  if (m < 1) return Math.round(m * 60) + "s";
+  const t = Math.round(m);
+  if (t < 60) return t + "m";
+  if (t < 1440) return Math.floor(t / 60) + "h" + (t % 60 ? " " + (t % 60) + "m" : "");
+  const h = Math.round(t / 60);
+  return Math.floor(h / 24) + "d" + (h % 24 ? " " + (h % 24) + "h" : "");
+}
+const fmtDay = (d) => new Date(d + "T00:00:00").toLocaleDateString("en-PH", { month: "short", day: "numeric" });
+const tz = DATA.client.timezone;
+const fmtTime = (iso) => new Date(iso).toLocaleString("en-PH", { timeZone: tz, month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+
+/* ------------------------------------------------ tabs */
+const tabs = [...document.querySelectorAll("nav.tabs button")];
+function show(id) {
+  tabs.forEach((b) => b.setAttribute("aria-selected", String(b.dataset.panel === id)));
+  document.querySelectorAll("section.panel").forEach((p) => (p.hidden = p.id !== id));
+  try { localStorage.setItem("tab", id); } catch (e) {}
+}
+tabs.forEach((b) => b.addEventListener("click", () => show(b.dataset.panel)));
+let start = location.hash.slice(1);
+if (!document.getElementById(start)) { try { start = localStorage.getItem("tab") || "how"; } catch (e) { start = "how"; } }
+show(document.getElementById(start) ? start : "how");
+
+/* ------------------------------------------------ tooltip */
+const tip = $("#tip");
+function showTip(e, html) { tip.innerHTML = html; tip.hidden = false;
+  const x = Math.min(e.clientX + 14, window.innerWidth - 270); tip.style.left = x + "px"; tip.style.top = (e.clientY + 14) + "px"; }
+const hideTip = () => (tip.hidden = true);
+
+/* ------------------------------------------------ header */
+$("#title").textContent = DATA.client.name;
+$("#eyebrow").textContent = `Proof of concept · simulated ${DATA.client.niche} data`;
+$("#subtitle").textContent = `Open ${DATA.client.hours.open}–${DATA.client.hours.close}, Mon–Sat (${tz}). First-reply target ${DATA.client.sla.first_reply_minutes} min. A hot lead alerts the front desk after ${DATA.client.sla.hot_unanswered_alert_minutes} min.`;
+
+/* ------------------------------------------------ KPIs */
+const B = DATA.periods.before || {}, A = DATA.periods.after || {};
+$("#periodNote").textContent = DATA.ai_day
+  ? `Before: ${fmtDay(DATA.first_day)} to the day before ${fmtDay(DATA.ai_day)}, staff only. After: from ${fmtDay(DATA.ai_day)}, the AI answers after hours. Revenue lags because appointments booked recently haven't happened yet.`
+  : "No AI replies yet: everything below is the baseline.";
+const kpis = [
+  ["Median first reply", fmtMin(A.frt_p50), fmtMin(B.frt_p50), A.frt_p50 < B.frt_p50],
+  ["Worst 10% wait (p90)", fmtMin(A.frt_p90), fmtMin(B.frt_p90), A.frt_p90 < B.frt_p90],
+  ["Conversations answered", (A.answered_pct ?? "–") + "%", (B.answered_pct ?? "–") + "%", A.answered_pct > B.answered_pct],
+  ["Consults booked", A.booked ?? 0, B.booked ?? 0, (A.booked ?? 0) > (B.booked ?? 0)],
+  ["Inquiries after closing", (A.after_hours_pct ?? "–") + "%", (B.after_hours_pct ?? "–") + "%", null],
+];
+$("#kpis").innerHTML = kpis.map(([l, a, b, good]) => `
+  <div class="kpi"><span class="label">${l}</span><span class="val">${a}</span>
+  <span class="was">before: ${b} ${good == null ? "" : good ? '<span class="delta-good">▲ better</span>' : '<span class="delta-bad">▼ worse</span>'}</span></div>`).join("");
+
+/* ------------------------------------------------ FRT line chart (log scale) */
+(function frtChart() {
+  const rows = DATA.daily, W = 900, H = 280, m = { l: 52, r: 16, t: 14, b: 30 };
+  const iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const ticks = [1, 10, 60, 360, 1440], lo = Math.log(0.5), hi = Math.log(3000);
+  const y = (v) => m.t + ih - ((Math.log(Math.max(v, 0.5)) - lo) / (hi - lo)) * ih;
+  const x = (i) => m.l + (rows.length === 1 ? iw / 2 : (i / (rows.length - 1)) * iw);
+  const path = (k) => rows.map((r, i) => r[k] == null ? "" : `${i ? "L" : "M"}${x(i).toFixed(1)},${y(r[k]).toFixed(1)}`).join("");
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="First reply time per day, p50 and p90">`;
+  ticks.forEach((t) => { s += `<line class="grid" x1="${m.l}" x2="${W - m.r}" y1="${y(t)}" y2="${y(t)}"/><text x="${m.l - 8}" y="${y(t) + 4}" text-anchor="end">${fmtMin(t)}</text>`; });
+  rows.forEach((r, i) => { if (i % 2 === 0 || rows.length < 10) s += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle">${fmtDay(r.day)}</text>`; });
+  const ai = rows.findIndex((r) => r.day === DATA.ai_day);
+  if (ai >= 0) s += `<line x1="${x(ai) - iw / (rows.length - 1) / 2}" x2="${x(ai) - iw / (rows.length - 1) / 2}" y1="${m.t}" y2="${m.t + ih}" stroke="var(--ink-2)" stroke-dasharray="4 4"/>
+      <text x="${x(ai) - iw / (rows.length - 1) / 2 + 6}" y="${m.t + 12}" style="fill:var(--ink-2)">AI after-hours on</text>`;
+  s += `<path d="${path("p90")}" fill="none" stroke="var(--s2)" stroke-width="2"/><path d="${path("p50")}" fill="none" stroke="var(--s1)" stroke-width="2"/>`;
+  rows.forEach((r, i) => { ["p90", "p50"].forEach((k) => { if (r[k] != null) s += `<circle cx="${x(i)}" cy="${y(r[k])}" r="4" fill="var(--${k === "p50" ? "s1" : "s2"})" stroke="var(--surface)" stroke-width="2"/>`; }); });
+  const colW = iw / Math.max(rows.length - 1, 1);
+  rows.forEach((r, i) => { s += `<rect class="hit" data-i="${i}" x="${x(i) - colW / 2}" y="${m.t}" width="${colW}" height="${ih}" fill="transparent"/>`; });
+  s += `<line id="cross" y1="${m.t}" y2="${m.t + ih}" stroke="var(--ink-2)" stroke-width="1" visibility="hidden"/></svg>`;
+  const el = $("#frtChart"); el.innerHTML = s;
+  const cross = el.querySelector("#cross");
+  el.querySelectorAll(".hit").forEach((h) => {
+    h.addEventListener("mousemove", (e) => { const r = rows[+h.dataset.i];
+      cross.setAttribute("x1", x(+h.dataset.i)); cross.setAttribute("x2", x(+h.dataset.i)); cross.setAttribute("visibility", "visible");
+      showTip(e, `<b>${fmtDay(r.day)}</b><br>${r.leads} new conversations<br>p50 ${fmtMin(r.p50)} · p90 ${fmtMin(r.p90)}<br>never answered: ${r.never_answered}<br>answered by AI: ${r.ai}`); });
+    h.addEventListener("mouseleave", () => { hideTip(); cross.setAttribute("visibility", "hidden"); });
+  });
+})();
+
+/* ------------------------------------------------ by-hour bars */
+(function hourChart() {
+  const byH = Object.fromEntries(DATA.by_hour.map((r) => [r.hour, r]));
+  const open = parseInt(DATA.client.hours.open), close = parseInt(DATA.client.hours.close);
+  const W = 520, H = 240, m = { l: 34, r: 8, t: 12, b: 28 }, iw = W - m.l - m.r, ih = H - m.t - m.b;
+  const max = Math.max(...DATA.by_hour.map((r) => r.leads), 1), bw = iw / 24;
+  const y = (v) => m.t + ih - (v / max) * ih;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Inquiries by hour of day">`;
+  for (let h = 0; h < 24; h++) if (h < open || h >= close) s += `<rect x="${m.l + h * bw}" y="${m.t}" width="${bw}" height="${ih}" fill="var(--band)"/>`;
+  const step = max > 10 ? 5 : 2;
+  for (let v = 0; v <= max; v += step) s += `<line class="grid" x1="${m.l}" x2="${W - m.r}" y1="${y(v)}" y2="${y(v)}"/><text x="${m.l - 6}" y="${y(v) + 4}" text-anchor="end">${v}</text>`;
+  for (let h = 0; h < 24; h++) {
+    const r = byH[h]; if (h % 3 === 0) s += `<text x="${m.l + h * bw + bw / 2}" y="${H - 8}" text-anchor="middle">${String(h).padStart(2, "0")}</text>`;
+    if (!r) continue;
+    const bx = m.l + h * bw + 2, bh = ih - (y(r.leads) - m.t), top = y(r.leads), w = bw - 4;
+    s += `<path d="M${bx},${m.t + ih} V${top + 4} q0,-4 4,-4 h${w - 8} q4,0 4,4 V${m.t + ih} Z" fill="var(--s1)"/>`;
+    s += `<rect class="hit" data-h="${h}" x="${m.l + h * bw}" y="${m.t}" width="${bw}" height="${ih}" fill="transparent"/>`;
+  }
+  s += `</svg>`;
+  const el = $("#hourChart"); el.innerHTML = s;
+  el.insertAdjacentHTML("beforeend", `<div class="legend"><span><i class="box" style="background:var(--s1)"></i>new conversations</span><span><i class="box" style="background:var(--band);border:1px solid var(--line)"></i>closed</span></div>`);
+  el.querySelectorAll(".hit").forEach((hEl) => {
+    hEl.addEventListener("mousemove", (e) => { const h = +hEl.dataset.h, r = byH[h];
+      showTip(e, `<b>${String(h).padStart(2, "0")}:00–${String(h).padStart(2, "0")}:59</b>${h < open || h >= close ? " (closed)" : ""}<br>${r.leads} conversations<br>median first reply ${fmtMin(r.p50)}<br>never answered: ${r.unanswered}`); });
+    hEl.addEventListener("mouseleave", hideTip);
+  });
+})();
+
+/* ------------------------------------------------ funnel */
+(function funnel() {
+  const f = DATA.funnel, top = f[0].n || 1;
+  let worst = -1, worstRate = 2;
+  f.forEach((s, i) => { if (i > 0) { const r = s.n / (f[i - 1].n || 1); if (r < worstRate) { worstRate = r; worst = i; } } });
+  $("#funnel").innerHTML = f.map((s, i) => {
+    const keep = i ? Math.round((100 * s.n) / (f[i - 1].n || 1)) : 100;
+    const step = s.step_hours ? `<div class="step">↳ step took ${fmtMin(s.step_hours.p50 * 60)} median · ${fmtMin(s.step_hours.p90 * 60)} p90</div>` : "";
+    return `${step}<div class="frow ${i === worst ? "leak" : ""}"><span class="lab">${esc(s.label)}</span>
+      <div class="bar" style="width:${(100 * s.n) / top}%"></div>
+      <span class="stat"><span class="num">${s.n}</span> · ${i ? `<b>${keep}%</b> kept` : "start"}${i === worst ? " · biggest drop" : ""}</span></div>`;
+  }).join("");
+})();
+
+/* ------------------------------------------------ sources */
+$("#sources").innerHTML = `<thead><tr><th>Source</th><th class="num">Leads</th><th class="num">Booked</th><th class="num">Book rate</th><th class="num">Revenue</th></tr></thead><tbody>` +
+  DATA.sources.map((r) => `<tr><td class="mono">${esc(r.source)}</td><td class="num">${r.leads}</td><td class="num">${r.booked}</td>
+    <td class="num">${Math.round((100 * r.booked) / r.leads)}%</td><td class="num">${peso(r.revenue)}</td></tr>`).join("") + "</tbody>";
+
+/* ------------------------------------------------ queue */
+const tcount = Object.fromEntries(DATA.temperatures.map((t) => [t.temperature, t.n]));
+$("#tempTiles").innerHTML = [["hot", "ready to book: act today"], ["warm", "interested: nurture"], ["cold", "price check or gone quiet"]].map(([t, d]) =>
+  `<div class="kpi"><span class="chip t-${t}">${t}</span><span class="val">${tcount[t] || 0}</span><span class="was">${d}</span></div>`).join("");
+const chip = (t) => `<span class="chip t-${t || "cold"}">${t || "–"}</span>`;
+$("#queueTbl").innerHTML = `<thead><tr><th>P</th><th>Lead</th><th>Label</th><th>Stage</th><th>Interest</th><th class="num">Est. value</th><th>Next action</th></tr></thead><tbody>` +
+  DATA.queue.map((r) => `<tr><td class="pri">P${r.priority}</td>
+    <td><b>${esc(r.display_name)}</b><br><span class="pri">${r.channel}${r.awaiting_reply ? " · waiting since " + fmtTime(r.waiting_since) : ""}</span></td>
+    <td>${chip(r.temperature)}<br><span class="pri">score ${r.score} · ${esc(r.intent)}</span></td>
+    <td>${esc(r.stage)}</td><td>${esc(r.interest || "–")}</td><td class="num">${r.est_value ? peso(r.est_value) : "–"}</td>
+    <td class="${r.priority === 1 ? "p1" : ""}">${esc(r.next_action)}</td></tr>`).join("") + "</tbody>";
+$("#alertTbl").innerHTML = `<thead><tr><th>Fired</th><th>Type</th><th>Message</th><th>Resolved</th></tr></thead><tbody>` +
+  DATA.alerts.map((a) => `<tr><td class="mono">${fmtTime(a.fired_at)}</td><td><span class="chip ${a.alert_type === "hot_unanswered" ? "t-hot" : "t-warm"}">${a.alert_type.replace("_", " ")}</span></td>
+    <td>${esc(a.message)}</td><td class="mono">${a.resolved_at ? "after " + fmtMin((new Date(a.resolved_at) - new Date(a.fired_at)) / 60000) : "open"}</td></tr>`).join("") + "</tbody>";
+
+/* ------------------------------------------------ traces */
+(function traces() {
+  const sla = DATA.client.sla.first_reply_minutes;
+  $("#traceList").innerHTML = DATA.traces.map((t) => {
+    const L = t.lead;
+    const spans = t.spans.map((s, i) => {
+      const k = s.kind;
+      const cls = k === "customer_message" ? "customer" : k === "staff_reply" ? "staff" : k === "ai_reply" ? "ai" : k === "alert_fired" ? "alert" : "system";
+      const label = { customer_message: "customer", staff_reply: "staff reply", ai_reply: "AI reply" }[k] || k.replace(/_/g, " ");
+      let detail = s.detail || "";
+      if (cls === "system" || cls === "alert") { try { const p = JSON.parse(detail); detail = Object.entries(p).filter(([, v]) => v != null && v !== "" && !(Array.isArray(v) && !v.length)).map(([a, v]) => `${a}: ${Array.isArray(v) ? v.join(", ") : v}`).join(" · "); } catch (e) {} }
+      if (s.value) detail += (detail ? " · " : "") + peso(s.value);
+      const isReply = cls === "staff" || cls === "ai";
+      const slow = isReply && s.since_prev_min > sla;
+      const w = s.since_prev_min > 0 ? Math.min(100, (Math.log10(s.since_prev_min + 1) / Math.log10(3000)) * 100) : 0;
+      return `<div class="span ${slow ? "slow" : ""}"><span class="when">${fmtTime(s.at)}</span>
+        <span><span class="gap">${i ? "+" + fmtMin(s.since_prev_min) : "start"}</span><div class="gapbar"><i style="width:${w}%"></i></div></span>
+        <span class="txt"><span class="kind k-${cls}">${esc(label)}</span>${esc(detail)}</span></div>`;
+    }).join("");
+    return `<div class="card"><div class="trace-head"><h3>${esc(t.title)}</h3><span class="pri">${esc(L.display_name)} · ${L.channel} · ${esc(L.interest || "")}</span>
+      ${chip(L.temperature)}<span class="pri">stage: ${esc(L.stage)}</span></div>${spans}</div>`;
+  }).join("");
+})();
+</script>
