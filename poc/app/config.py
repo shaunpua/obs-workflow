@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import copy
 import json
+import os
+import re
 from pathlib import Path
 
 import yaml
@@ -25,8 +27,13 @@ def deep_merge(base: dict, override: dict) -> dict:
     return out
 
 
+def _expand_env(text: str) -> str:
+    """Replace ${VAR} with the environment value (empty string if unset)."""
+    return re.sub(r"\$\{(\w+)\}", lambda m: os.environ.get(m.group(1), ""), text)
+
+
 def load_client(path: Path) -> dict:
-    client = yaml.safe_load(path.read_text())
+    client = yaml.safe_load(_expand_env(path.read_text()))
     niche = yaml.safe_load((CONFIG_DIR / "niches" / f"{client['niche']}.yaml").read_text())
     merged = deep_merge(niche, client.get("overrides", {}))
     for key in ("client_id", "name", "niche", "timezone", "business_hours", "channels", "ai_app_id", "alerts"):
@@ -55,6 +62,8 @@ def sync_clients_to_db(conn, clients: dict[str, dict]) -> None:
                  json.dumps(cfg)),
             )
             for channel, ch in cfg.get("channels", {}).items():
+                if not ch.get("external_id"):      # e.g. META_PAGE_ID not set yet
+                    continue
                 cur.execute(
                     """INSERT INTO channels (channel, external_id, client_id) VALUES (%s,%s,%s)
                        ON CONFLICT (channel, external_id) DO UPDATE SET client_id=EXCLUDED.client_id""",

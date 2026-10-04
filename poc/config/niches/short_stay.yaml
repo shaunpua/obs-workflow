@@ -1,0 +1,65 @@
+# Niche pack: short-stay rental (Airbnb-style) booked through a Facebook Page.
+# Same engine as the clinic pack, different words, stages and targets.
+
+niche: short_stay
+
+stages:
+  - { key: inquiry,   label: "Inquiry",       events: [lead_created] }
+  - { key: engaged,   label: "Replied",       events: [first_reply] }
+  - { key: qualified, label: "Dates shared",  events: [lead_qualified] }
+  - { key: booked,    label: "Booked",        events: [booking_confirmed] }
+  - { key: stayed,    label: "Checked in",    events: [checked_in] }
+  - { key: reviewed,  label: "Review left",   events: [review_left] }
+
+interests:
+  short_stay: { keywords: ["overnight", "weekend", "night", "gabi", "staycation"], value: 7000 }
+  long_stay:  { keywords: ["month", "monthly", "week", "linggo", "buwan"],         value: 35000 }
+  event:      { keywords: ["party", "event", "birthday", "reunion", "pre-nup", "shoot"], value: 12000 }
+
+classification:
+  signals:
+    asks_availability: { weight: 35, patterns: ["available", "avail", "vacant", "dates", "check in", "check-in", "checkin", "bukas", "this weekend", "sa", "pwede"] }
+    asks_to_book:      { weight: 45, patterns: ["book", "reserve", "reservation", "kukunin", "i'll take", "down payment", "dp"] }
+    mentions_guests:   { weight: 15, patterns: ["guests", "pax", "kami", "adults", "kids", "people"] }
+    asks_details:      { weight: 15, patterns: ["wifi", "parking", "pool", "pets", "kitchen", "aircon", "address", "location", "saan"] }
+    price_only:        { weight: 8,  patterns: ["hm", "how much", "magkano", "rate", "price", "presyo"] }
+    not_now:           { weight: -25, patterns: ["next month", "maybe", "pag-iisipan", "think about", "later"] }
+    gone_cold:         { weight: -40, patterns: ["mahal", "too expensive", "wag na", "no thanks", "nevermind"] }
+  thresholds: { hot: 50, warm: 20 }
+  decay_days: 5
+  qualified_when: { require_interest: false, any_signal: [asks_availability, asks_to_book] }
+
+sla:
+  first_reply_minutes: 15
+  hot_unanswered_alert_minutes: 15
+  escalation_minutes: 60
+
+next_actions:
+  - when: { awaiting_reply: true, temperature: hot }
+    action: "Reply now: confirm dates and guests, send the price and booking link"
+    priority: 1
+  - when: { awaiting_reply: true }
+    action: "Reply: answer the question, ask for dates and number of guests"
+    priority: 2
+  - when: { temperature: hot, stage: qualified }
+    action: "Send the booking link and the down-payment details"
+    priority: 1
+  - when: { stage: qualified, idle_hours: 24 }
+    action: "Follow up: are the dates still open? Offer a nearby date"
+    priority: 2
+  - when: { stage: booked }
+    action: "Send check-in instructions 1 day before"
+    priority: 3
+  - when: { stage: stayed }
+    action: "Ask for a review after check-out"
+    priority: 3
+  - when: { temperature: cold }
+    action: "No action: keep for the next promo"
+    priority: 4
+  - when: {}
+    action: "No action needed"
+    priority: 5
+
+ai_responder:
+  never_discuss: []
+  handoff_keywords: ["refund", "complaint", "damage"]

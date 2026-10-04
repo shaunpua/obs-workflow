@@ -98,7 +98,9 @@ poc/
 
 Do them in order. Each ends with something you can see. Commit after each.
 
-### M1. Your own Facebook Page live (week 1)
+### M1. Your own Facebook Page live (week 1) — code done, waiting for a live test
+
+Status: webhook receiver, signature check, dedupe, name lookup, subscribe script, `show_recent` viewer, `short_stay` niche pack (for the Airbnb Page), `my-airbnb-page.yaml` client file and 10 passing tests are in `poc/`. The remaining step is the live test by the Page owner: follow `docs/SETUP_META.md`.
 
 Goal: a real message to your Page and your reply land in Postgres with the right reply time.
 

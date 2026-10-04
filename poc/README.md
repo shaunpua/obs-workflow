@@ -1,12 +1,19 @@
 # Revenue Observability POC
 
-Status: first version, paused for plan review. Read [`../docs/POC_PLAN.md`](../docs/POC_PLAN.md) first.
+Status: milestone 1 (your own Page) is ready to test. Plans: [`../docs/POC_PLAN.md`](../docs/POC_PLAN.md), build guide: [`../docs/POC_IMPLEMENTATION.md`](../docs/POC_IMPLEMENTATION.md). Connecting your Page: [`../docs/SETUP_META.md`](../docs/SETUP_META.md).
+
+## Tests
+
+```bash
+pip install pytest
+pytest            # needs a Postgres database named revobs_test (see tests/conftest.py)
+```
 
 ## Run on simulated data
 
 ```bash
 pip install -r requirements.txt
-docker run -d --name revobs-db -e POSTGRES_USER=revobs -e POSTGRES_PASSWORD=revobs -e POSTGRES_DB=revobs -p 5432:5432 postgres:16
+docker compose up -d db
 export DATABASE_URL=postgresql://revobs:revobs@localhost:5432/revobs
 
 python -m scripts.simulate                          # 14 days of clinic chats, sent as signed Meta webhooks

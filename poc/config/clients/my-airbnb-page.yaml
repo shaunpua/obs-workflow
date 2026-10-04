@@ -1,0 +1,26 @@
+# Your own Facebook Page (Airbnb bookings), used to test real Meta webhooks.
+# Set META_PAGE_ID in the environment (Page → About → Page ID, or Meta Business Suite).
+# Nothing else needs editing to start receiving data.
+
+client_id: my-airbnb
+name: "My Airbnb Page"
+niche: short_stay
+timezone: Asia/Manila
+
+business_hours:
+  open: "07:00"
+  close: "23:00"
+  days: [1, 2, 3, 4, 5, 6, 7]
+
+channels:
+  messenger: { external_id: "${META_PAGE_ID}" }
+  # instagram: { external_id: "${META_IG_ID}" }   # enable later when linked
+
+# Replies sent by your own AI would carry this app id; manual replies from
+# Meta Business Suite carry a different one, so they count as "staff".
+ai_app_id: "${META_APP_ID}"
+
+# Optional: override anything from config/niches/short_stay.yaml
+overrides:
+  sla:
+    hot_unanswered_alert_minutes: 15

@@ -11,11 +11,11 @@ import logging
 import os
 from datetime import datetime, timezone
 
-from fastapi import FastAPI, Header, HTTPException, Query, Request
+from fastapi import BackgroundTasks, FastAPI, Header, HTTPException, Query, Request
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 
-from . import alerts, pipeline
+from . import alerts, pipeline, profiles
 from .config import load_all_clients, sync_clients_to_db
 from .db import connect, migrate
 from .normalize import normalize
@@ -26,6 +26,8 @@ log = logging.getLogger("revobs")
 META_APP_SECRET = os.environ.get("META_APP_SECRET", "dev-secret")
 META_VERIFY_TOKEN = os.environ.get("META_VERIFY_TOKEN", "dev-verify")
 API_KEY = os.environ.get("API_KEY", "dev-api-key")
+if META_APP_SECRET == "dev-secret":
+    log.warning("META_APP_SECRET is not set: using the insecure dev default. Set it before exposing this app.")
 
 app = FastAPI(title="Revenue Observability POC")
 conn = connect()
@@ -72,7 +74,8 @@ def meta_verify(mode: str = Query(alias="hub.mode"), token: str = Query(alias="h
 
 
 @app.post("/webhooks/meta")
-async def meta_webhook(request: Request, x_hub_signature_256: str | None = Header(default=None)):
+async def meta_webhook(request: Request, background: BackgroundTasks,
+                       x_hub_signature_256: str | None = Header(default=None)):
     """Messenger, Instagram and WhatsApp all arrive here, signed with your app secret."""
     body = await request.body()
     expected = "sha256=" + hmac.new(META_APP_SECRET.encode(), body, hashlib.sha256).hexdigest()
@@ -81,7 +84,9 @@ async def meta_webhook(request: Request, x_hub_signature_256: str | None = Heade
     payload = json.loads(body)
     raw_id = _store_raw("meta", payload, True)
     # POC processes inline. In production: enqueue raw_id and return 200 immediately.
-    return {"ok": True, "results": _process("meta", raw_id, payload)}
+    results = _process("meta", raw_id, payload)
+    background.add_task(profiles.fill_missing_names)   # names after the response, never blocking
+    return {"ok": True, "results": results}
 
 
 # ------------------------------------------------------------------ Chatwoot

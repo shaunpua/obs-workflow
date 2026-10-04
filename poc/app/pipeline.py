@@ -6,9 +6,12 @@
 from __future__ import annotations
 
 import json
+import logging
 from datetime import datetime
 
 from .classify import llm_classify, rule_classify
+
+log = logging.getLogger("pipeline")
 
 
 def client_for_channel(conn, channel: str, external_id: str) -> str | None:
@@ -47,6 +50,8 @@ def _get_or_create_lead(conn, client_id, m) -> tuple[dict, bool]:
 def ingest_message(conn, clients: dict, m: dict, raw_id: int | None = None) -> str:
     client_id = client_for_channel(conn, m["channel"], m["channel_external_id"])
     if not client_id:
+        log.warning("webhook for unknown %s id %r: add it to a client file under channels.%s.external_id",
+                    m["channel"], m["channel_external_id"], m["channel"])
         return "unknown_channel"
     cfg = clients[client_id]
     lead, _ = _get_or_create_lead(conn, client_id, m)
