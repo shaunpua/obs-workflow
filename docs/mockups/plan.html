@@ -154,7 +154,8 @@ ul.plain { margin: 0; padding-left: 18px; display: grid; gap: 4px; max-width: 72
           <tr><td>2</td><td>The client dashboard covers <b>all</b> sources, not only Meta</td><td>The dashboard reads one set of tables. Meta, booking tools, payments, the events API and CSV imports are adapters that write into them, each tagged with its source.</td></tr>
           <tr><td>3</td><td>First niche: clinics</td><td>Build and validate the clinic config first.</td></tr>
           <tr><td>4</td><td>Booking capture: use their existing tool if possible</td><td>Webhook adapter → Google Calendar → CSV → our own booking link or a staff button (section 10).</td></tr>
-          <tr><td>5</td><td>Meta business verification: open</td><td>Recommendation: start in week 1, since it gates connecting any Page that isn't yours.</td></tr>
+          <tr><td>5</td><td>Frontend: our own app (FastAPI + HTMX + ECharts)</td><td>The clickable mockup is the visual spec. No Metabase or Grafana in the POC.</td></tr>
+          <tr><td>6</td><td>Meta business verification: open</td><td>Recommendation: start in week 1, since it gates connecting any Page that isn't yours.</td></tr>
         </tbody>
       </table></div>
     </section>
@@ -731,7 +732,7 @@ flowchart LR
       </table></div>
       <h3>Smaller choices still open</h3>
       <ol class="steps">
-        <li><span>Portal tech: FastAPI + HTMX (simplest, recommended) or Next.js.</span></li>
+        
         <li><span>New-journey gap for clinics: 45 days?</span></li>
         <li><span>Which custom levels are standard and which are add-ons.</span></li>
         <li><span>When to start Meta business verification (recommended: week 1).</span></li>
