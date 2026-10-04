@@ -1,0 +1,47 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "1. Database: start (Docker)",
+      "type": "shell",
+      "command": "docker compose up -d db",
+      "options": { "cwd": "${workspaceFolder}/poc" },
+      "problemMatcher": []
+    },
+    {
+      "label": "2. Tunnel: expose port 8000 (cloudflared)",
+      "type": "shell",
+      "command": "cloudflared tunnel --url http://localhost:8000",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "3. Check my setup",
+      "type": "shell",
+      "command": "${command:python.interpreterPath} -m scripts.check_env",
+      "options": { "cwd": "${workspaceFolder}/poc" },
+      "problemMatcher": []
+    },
+    {
+      "label": "4. Subscribe my Page to Meta events",
+      "type": "shell",
+      "command": "${command:python.interpreterPath} -m scripts.subscribe_page",
+      "options": { "cwd": "${workspaceFolder}/poc" },
+      "problemMatcher": []
+    },
+    {
+      "label": "5. Show what was received",
+      "type": "shell",
+      "command": "${command:python.interpreterPath} -m scripts.show_recent --client my-airbnb --raw",
+      "options": { "cwd": "${workspaceFolder}/poc" },
+      "problemMatcher": []
+    },
+    {
+      "label": "Run tests",
+      "type": "shell",
+      "command": "${command:python.interpreterPath} -m pytest tests -q",
+      "options": { "cwd": "${workspaceFolder}/poc" },
+      "problemMatcher": []
+    }
+  ]
+}

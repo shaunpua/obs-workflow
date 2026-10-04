@@ -1,0 +1,40 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "App: run the webhook server",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "uvicorn",
+      "args": ["app.main:app", "--port", "8000", "--reload"],
+      "cwd": "${workspaceFolder}/poc",
+      "envFile": "${workspaceFolder}/poc/.env",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Script: check my setup",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "scripts.check_env",
+      "cwd": "${workspaceFolder}/poc",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Script: send a fake test message",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "scripts.send_test_message",
+      "cwd": "${workspaceFolder}/poc",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Script: show what was received",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "scripts.show_recent",
+      "args": ["--client", "my-airbnb", "--raw"],
+      "cwd": "${workspaceFolder}/poc",
+      "console": "integratedTerminal"
+    }
+  ]
+}

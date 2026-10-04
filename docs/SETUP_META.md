@@ -1,5 +1,7 @@
 # Connect your own Facebook Page (milestone 1)
 
+> **Start with [`LOCAL_SETUP.md`](LOCAL_SETUP.md)** for the laptop and VS Code setup (install, `.env`, database, run buttons). This page covers the Meta dashboard side in more detail.
+
 Goal: message your Page, reply from the inbox, and see both messages and the reply time in your database.
 No Meta app review is needed for your own Page while the app is in **Development mode**.
 
@@ -22,14 +24,7 @@ Keep secrets (app secret, page token) on your machine only. Don't paste them int
 
 ## 1. Start the app locally
 
-```bash
-cd poc
-pip install -r requirements.txt
-docker compose up -d db
-cp .env.example .env        # fill in the values as you collect them below
-set -a; source .env; set +a
-uvicorn app.main:app --port 8000
-```
+See `LOCAL_SETUP.md` steps 1–5. In short: create `poc/.env` from `.env.example`, start the database with `docker compose up -d db`, then run `uvicorn app.main:app --port 8000` from `poc/`. The app loads `.env` itself.
 
 Set now: `META_VERIFY_TOKEN` (any string) and `META_PAGE_ID`. The rest comes in the next steps (restart uvicorn after each change to `.env`).
 

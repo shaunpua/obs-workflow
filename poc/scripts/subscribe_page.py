@@ -15,6 +15,8 @@ import sys
 
 import httpx
 
+import app  # noqa: F401  (loads poc/.env)
+
 GRAPH_VERSION = os.environ.get("GRAPH_VERSION", "v23.0")
 FIELDS = "messages,message_echoes,messaging_postbacks,messaging_referrals,message_reads,message_deliveries"
 

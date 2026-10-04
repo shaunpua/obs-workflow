@@ -2,6 +2,7 @@ fastapi
 uvicorn
 psycopg[binary]
 pyyaml
+python-dotenv
 httpx
 pydantic
 anthropic   # optional: only used when LLM_CLASSIFY=1

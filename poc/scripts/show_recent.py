@@ -18,7 +18,12 @@ def main() -> None:
     ap.add_argument("--raw", action="store_true")
     args = ap.parse_args()
 
-    with connect() as c:
+    try:
+        c = connect()
+    except Exception as exc:
+        print(f"Cannot connect to the database: {str(exc).splitlines()[0]}\nIs it running? Try: docker compose up -d db")
+        raise SystemExit(1)
+    with c:
         where, params = ("WHERE m.client_id = %s", [args.client]) if args.client else ("", [])
         rows = c.execute(
             f"""SELECT m.sent_at AT TIME ZONE 'Asia/Manila' AS t, m.client_id, COALESCE(l.display_name, l.external_user_id) AS who,
