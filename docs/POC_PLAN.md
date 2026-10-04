@@ -592,7 +592,7 @@ Growth path: inline → queue + worker → cron alerts + cached views → monthl
 | A clinic system with no API | Nightly CSV export upload, matched by phone | 1 day |
 | Notebook / nothing | Offer our own booking link (self-hosted Cal.com, free) **or** a Telegram "Booked" button for staff | Hours |
 
-**Frontend decision:** our own app, not an existing dashboard tool. FastAPI + Jinja + HTMX, with Apache ECharts for charts. The clickable mockup in `docs/mockups/client-app.html` is the visual spec. Metabase and Grafana are not part of the POC; Metabase can be added later for owner analytics, and Grafana only for monitoring our own platform.
+**Frontend decision:** our own app, not an existing dashboard tool. FastAPI + Jinja + HTMX, with Apache ECharts for charts. The clickable mockup in `docs/mockups/client-app.html` is the visual spec. Metabase OSS is added in the POC for custom panels and ad-hoc charts (we build them in its UI, no code), and Grafana only monitors our own platform. Full build-vs-buy list: `docs/BUILD_VS_BUY.md`.
 
 **Build guide:** `docs/POC_IMPLEMENTATION.md` breaks the POC into six milestones with tasks and "done when" checks.
 

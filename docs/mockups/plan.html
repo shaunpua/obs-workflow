@@ -133,6 +133,7 @@ ul.plain { margin: 0; padding-left: 18px; display: grid; gap: 4px; max-width: 72
       <li><a href="#council"><span>16</span>LLM council</a></li>
       <li><a href="#roadmap"><span>17</span>Roadmap</a></li>
       <li><a href="#refs"><span>18</span>References</a></li>
+      <li><a href="#buy"><span>19</span>Build vs buy</a></li>
     </ol>
   </aside>
 
@@ -154,7 +155,7 @@ ul.plain { margin: 0; padding-left: 18px; display: grid; gap: 4px; max-width: 72
           <tr><td>2</td><td>The client dashboard covers <b>all</b> sources, not only Meta</td><td>The dashboard reads one set of tables. Meta, booking tools, payments, the events API and CSV imports are adapters that write into them, each tagged with its source.</td></tr>
           <tr><td>3</td><td>First niche: clinics</td><td>Build and validate the clinic config first.</td></tr>
           <tr><td>4</td><td>Booking capture: use their existing tool if possible</td><td>Webhook adapter → Google Calendar → CSV → our own booking link or a staff button (section 10).</td></tr>
-          <tr><td>5</td><td>Frontend: our own app (FastAPI + HTMX + ECharts)</td><td>The clickable mockup is the visual spec. No Metabase or Grafana in the POC.</td></tr>
+          <tr><td>5</td><td>Frontend: our own app (FastAPI + HTMX + ECharts)</td><td>Fixed screens are ours; custom panels and ad-hoc charts come from Metabase (no chart code). Grafana only for our own monitoring. See section 19.</td></tr>
           <tr><td>6</td><td>Meta business verification: open</td><td>Recommendation: start in week 1, since it gates connecting any Page that isn't yours.</td></tr>
         </tbody>
       </table></div>
@@ -772,6 +773,71 @@ flowchart LR
         </ul>
       </div>
       <p class="muted">Some Meta pages couldn't be opened directly from the build environment, so those facts come from Meta's documentation as shown in search results. Re-check field names against the Graph API version you pin.</p>
+    </section>
+
+    <!-- 19 -->
+    <section id="buy">
+      <h2><span class="n">19</span>Build vs buy</h2>
+      <p>Build only what makes the service different. Everything else is an existing tool.</p>
+      <div class="panel">
+<pre class="mermaid">
+flowchart TB
+  subgraph WE["We build: the core"]
+    direction LR
+    A1[One data model for every source] ~~~ A2[Identity + returning journeys] ~~~ A3[Metric definitions as SQL views]
+    A4[Labels + next-action rules per niche] ~~~ A5[Action screens: queue, pipeline, contact trace] ~~~ A6[Onboarding playbook + leak report]
+  end
+  subgraph TOOLS["We use: existing tools"]
+    direction LR
+    T1[Meta inbox, WhatsApp Business app] ~~~ T2[Meta, WhatsApp APIs] ~~~ T3[Postgres] ~~~ T4[ECharts for our charts]
+    T5[Metabase for custom panels] ~~~ T6[Grafana, Prometheus, Sentry for our ops] ~~~ T7[Telegram, email service] ~~~ T8[Cal.com, PayMongo, n8n, Claude API]
+  end
+  TOOLS --> WE
+</pre>
+      </div>
+      <h3>Charts and custom panels: who makes them?</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Need</th><th>Who / what</th><th>How</th></tr></thead>
+        <tbody>
+          <tr><td>Screens every clinic gets</td><td>We build once</td><td>Our app; charts drawn by the ECharts library from our data</td></tr>
+          <tr><td>A clinic wants a new chart</td><td>Metabase, made by us in its UI</td><td>SQL or point-and-click, saved to their dashboard in minutes, no deploy</td></tr>
+          <tr><td>Owner wants to explore</td><td>Metabase login per clinic</td><td>Own Postgres login + row-level security, so each clinic sees only its rows (free)</td></tr>
+          <tr><td>Chart inside our app</td><td>Metabase static embed</td><td>Signed iframe locked to the clinic (free, small badge)</td></tr>
+          <tr><td>Our servers and webhooks</td><td>Grafana + Prometheus</td><td>Internal only</td></tr>
+        </tbody>
+      </table></div>
+      <h3>Product</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Area</th><th>We build</th><th>We use</th></tr></thead>
+        <tbody>
+          <tr><td>Staff inbox</td><td>–</td><td>Meta Business Suite, WhatsApp Business app; Chatwoot later</td></tr>
+          <tr><td>Receiving messages</td><td>Thin adapters</td><td>Messenger, Instagram, WhatsApp APIs</td></tr>
+          <tr><td>Queue, scheduler</td><td>–</td><td>Postgres SKIP LOCKED or Procrastinate; APScheduler</td></tr>
+          <tr><td>Identity, journeys, metrics, next actions</td><td class="yes">core</td><td>–</td></tr>
+          <tr><td>Lead labels</td><td>Rules + niche packs</td><td>Claude API for unclear cases</td></tr>
+          <tr><td>Custom rules</td><td>Config format</td><td>json-logic library</td></tr>
+          <tr><td>Action screens</td><td class="yes">yes</td><td>HTMX, ECharts, Pico CSS</td></tr>
+          <tr><td>Alerts, digest</td><td>Text + rules</td><td>Telegram Bot API; Resend / Postmark / SES for email</td></tr>
+          <tr><td>Bookings, payments</td><td>Adapters</td><td>Clinic's tool or Cal.com; PayMongo, Xendit</td></tr>
+          <tr><td>One-off automations</td><td>–</td><td>n8n</td></tr>
+          <tr><td>Login</td><td>Shared password in POC</td><td>FastAPI-Users, Clerk or Supabase Auth later</td></tr>
+          <tr><td>Hosting, secrets, backups</td><td>Compose file</td><td>VPS, Caddy, Infisical/Doppler, pg_dump/pgBackRest</td></tr>
+        </tbody>
+      </table></div>
+      <h3>Running the business</h3>
+      <div class="tbl"><table>
+        <thead><tr><th>Area</th><th>We build (templates)</th><th>We use</th></tr></thead>
+        <tbody>
+          <tr><td>Our sales pipeline, call booking</td><td>–</td><td>HubSpot free or Notion; Cal.com or Calendly</td></tr>
+          <tr><td>Discovery + workflow mapping</td><td>Question list, mapping template</td><td>Notion or Google Docs; Excalidraw or FigJam</td></tr>
+          <tr><td>Onboarding intake, checklist</td><td>Checklist</td><td>Tally or Google Forms; Notion</td></tr>
+          <tr><td>Proposal, contract, DPA</td><td>Wording, lawyer-reviewed</td><td>Google Docs + Documenso, Dropbox Sign or PandaDoc</td></tr>
+          <tr><td>Leak / audit report</td><td>Generated from our SQL</td><td>PDF or shared page</td></tr>
+          <tr><td>Invoicing, accounting</td><td>–</td><td>Xendit or PayMongo invoices, Stripe abroad; Xero or QuickBooks</td></tr>
+          <tr><td>Support, runbooks, status</td><td>Short runbooks</td><td>Viber/WhatsApp group, Notion or Linear, Uptime Kuma status page</td></tr>
+          <tr><td>Staff training</td><td>1-page guide</td><td>Loom videos</td></tr>
+        </tbody>
+      </table></div>
     </section>
   </main>
 </div>

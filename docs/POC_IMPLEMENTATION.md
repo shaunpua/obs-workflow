@@ -15,12 +15,12 @@ This is the build guide for the clinic POC. It is written so any developer (or a
 | Niche | Clinics only (`poc/config/niches/clinic.yaml`) |
 | Inbox | Clinics keep replying in Meta Business Suite / WhatsApp Business app. We only listen (webhooks). No Chatwoot |
 | Dashboard data | Source-agnostic. The portal reads only our tables. Meta, booking, payments, events API and CSV are adapters that write into them |
-| Frontend | **Our own app**: FastAPI + Jinja2 templates + HTMX, Apache ECharts for charts. No React build step. No Metabase or Grafana in the POC |
+| Frontend | **Our own app** for the fixed screens: FastAPI + Jinja2 + HTMX, Apache ECharts for charts. **Metabase OSS** for custom panels and ad-hoc charts (milestone M4b). Grafana only for our own monitoring. See `docs/BUILD_VS_BUY.md` |
 | Booking capture | Use the clinic's tool if it has webhooks; else Google Calendar; else CSV; else a staff "Booked" button |
 | Database | Postgres 16. Every table has `client_id` |
 | LLM | Optional, off by default (`LLM_CLASSIFY=0`). Rules do the labelling |
 
-Not in the POC: AI auto-replies, nurture sequences, WhatsApp, Viber, Metabase, multi-user login with roles, self-serve Meta connect.
+Not in the POC: AI auto-replies, nurture sequences, WhatsApp, Viber, multi-user login with roles, self-serve Meta connect.
 
 ---
 
@@ -168,6 +168,18 @@ Auth for the POC: one shared password per client (HTTP Basic or a signed cookie)
 
 Done when: every mockup screen renders from the simulator's data and from your own Page's data.
 
+### M4b. Custom panels with Metabase (week 5, ~1 day)
+
+Goal: show that a clinic can get a new chart without us writing chart code.
+
+1. Add `metabase/metabase` to Docker Compose (its own small Postgres for Metabase's settings).
+2. Create a read-only Postgres login per client (e.g. `mb_demo_clinic`) and a row-level security policy on `contacts`, `journeys`, `messages`, `events` so that login only sees its `client_id`. Script it in `db/010_metabase_roles.sql`.
+3. In Metabase: one database connection per client using that login, one collection per client, one group per client.
+4. Build an owner dashboard from the SQL views (reply time, bookings by source, revenue by week) and one custom panel (e.g. bookings by weekday).
+5. Turn on static embedding; embed one chart in the portal's Overview with a signed URL locked to the client (`portal/metabase.py` signs the JWT with `METABASE_SECRET_KEY`).
+
+Done when: a new chart made in Metabase's UI appears in the clinic's dashboard in under 10 minutes, and logging in as the clinic's Metabase user shows only that clinic's rows.
+
 ### M5. Alerts and weekly digest (week 5)
 
 1. `jobs/scheduler.py` with APScheduler: `run_checks` every minute, `refresh_all` hourly, digest Mondays 08:00 Manila.
@@ -191,6 +203,7 @@ Done when: a test hot lead on your Page pings your phone within 10 business minu
 - SQL lives in `db/*.sql` (schema, views) and `portal/queries.py` (screen queries). No ORM.
 - Every table and every query filters by `client_id`.
 - Times: store `timestamptz` in UTC; convert to the client's timezone only in SQL views or templates.
+- Use existing tools before writing code (see `docs/BUILD_VS_BUY.md`). Custom rules use a json-logic library.
 - Never block a webhook response on an external call (Graph API, LLM, Telegram).
 - Every new behaviour gets a pytest using `scripts/simulate.py` payload builders or small fixtures.
 - Don't put niche words (botox, solar) in Python. They belong in YAML.
