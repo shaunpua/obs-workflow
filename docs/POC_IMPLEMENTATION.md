@@ -4,6 +4,7 @@ This is the build guide for the clinic POC. It is written so any developer (or a
 
 - **Why and what:** `docs/POC_PLAN.md`
 - **What it should look like:** `docs/mockups/client-app.html` (open in a browser; fake data). Every screen below refers to a screen in that mockup.
+- **Screens, customisation and client requests:** `docs/PRODUCT_UX.md`
 - **Code:** `poc/`
 
 ---
@@ -123,7 +124,10 @@ Tasks:
 3. `core/journeys.py`: `journey_for(contact, at, cfg)` with the rule: new journey if none, last outcome won/lost, or quiet > `new_journey_after_days` (add `new_journey_after_days: 45` to `clinic.yaml`). Set `returning=true` when the contact had a previous journey. Close a journey as `won` on `payment_received`, `lost` on `lead_lost`.
 4. Move stage, temperature, next action, `awaiting_reply` from leads to journeys in `pipeline.py`.
 5. Update `002_metrics.sql` views to group by `journey_id` instead of `lead_id`.
-6. Update `simulate.py` to include ~15% returning patients (second journey 2–6 months after a paid first one).
+6. Add `pipelines` and `pipeline_stages` tables. Seed from `clinic.yaml` (new `pipelines:` block: name, stages with entry event and target, treatments). Journeys get a `pipeline_id`, picked from the treatment interest; staff can override. Default: one pipeline per clinic.
+7. Add a fixed `lost_reasons:` list to `clinic.yaml`; a journey closed as lost must pick one (classifier or staff).
+8. Add `tags` (per client, with an optional json-logic rule) and `journey_tags`.
+9. Update `simulate.py` to include ~15% returning patients (second journey 2–6 months after a paid first one).
 
 Done when (pytest):
 - Same PSID, message 60 days after a won journey → same contact, journey number 2, `returning = true`.
@@ -156,11 +160,18 @@ Screens (each a Jinja template + one query function in `portal/queries.py`):
 |---|---|---|---|
 | Overview | `/c/{client}/` | `v_daily_kpis`, `v_reply_pairs`, journeys, events | KPI tiles, reply-time chart (ECharts, log y), inquiries by hour, leaks table, sources table |
 | Action queue | `/c/{client}/queue` | journeys where `next_action_priority <= 3` | HTMX auto-refresh every 30s (`hx-trigger="every 30s"`). Buttons POST to `/c/{client}/journeys/{id}/mark` |
-| Pipeline | `/c/{client}/pipeline` | open journeys by stage | No drag-and-drop in the POC |
+| Journeys (trace) | `/c/{client}/journeys` | journeys + events per stage | Row per journey, a cell per stage (done / slow / now / stopped). Row expands to a waterfall + step details. Filters: status, stopped-at stage |
+| Pipeline | `/c/{client}/pipeline?p={pipeline}` | open journeys by stage | One board per pipeline; per column: count, potential value, median time to reach, % from previous; plus a Lost column with reasons. No drag-and-drop |
+| Activity log | `/c/{client}/log` | messages + events, newest first | Type filter, search, click → journey |
+| Pipelines & rules | `/c/{client}/settings` | pipelines, stages, tags, alerts, links | Simple forms; saves to the DB (client YAML stays the default/seed) |
 | Contacts | `/c/{client}/contacts` | contacts + latest journey | Filters as query params; HTMX swaps the table |
 | Contact profile | `/c/{client}/contacts/{id}` | contact, journeys, `lead_trace()` | Journey tabs, trace bars, conversation |
 | Bottlenecks | `/c/{client}/bottlenecks` | stage milestones | Funnel with % kept and median/p90 per step |
 | Sources & rules | `/c/{client}/sources` | channels, last event per source | Shows "last event received" per source (health) |
+
+Quick links: per-client URL templates (`links:` in the client file) for "Open chat", "Clinic system" and "Booking link"; every queue row and journey detail shows them.
+
+Theme: light by default with a dark switch (copy tokens from the mockup).
 
 Auth for the POC: one shared password per client (HTTP Basic or a signed cookie). Real users and roles come later.
 
@@ -179,6 +190,14 @@ Goal: show that a clinic can get a new chart without us writing chart code.
 5. Turn on static embedding; embed one chart in the portal's Overview with a signed URL locked to the client (`portal/metabase.py` signs the JWT with `METABASE_SECRET_KEY`).
 
 Done when: a new chart made in Metabase's UI appears in the clinic's dashboard in under 10 minutes, and logging in as the clinic's Metabase user shows only that clinic's rows.
+
+### M5b. AI summaries (week 6, optional, behind `LLM_SUMMARIES=1`)
+
+1. Lead summary: on new inbound messages (debounced 10 min) send that journey's redacted messages + events to Claude with structured output `{summary, wants, objections, preferences, suggested_next_step, lost_reason?}`. `lost_reason` must be one of `clinic.yaml` `lost_reasons`. Store in `journey_summaries`.
+2. Weekly summary: nightly job builds a JSON of the week's numbers from the views (never raw rows), asks for 3 sentences + 3 suggestions, stores it. Numbers in the text must match the input; reject and retry otherwise.
+3. Show both in the portal (journey detail, Overview, Bottlenecks) with a "based on N conversations" line and links to the journeys.
+
+Done when: summaries appear for your own Page's conversations and can be turned off per client.
 
 ### M5. Alerts and weekly digest (week 5)
 

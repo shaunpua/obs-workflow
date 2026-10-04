@@ -3,57 +3,57 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
-/* Layout: app shell. Left nav rail (top tabs on phones), content area with summary first, detail below. */
+/* Layout: app shell, light by default with a manual dark switch. Left nav rail (top tabs on phones), summary first, detail below. */
 :root {
-  --bg: #f3f5f3; --surface: #ffffff; --surface-2: #f8faf8; --ink: #141816; --ink-2: #4b524d; --muted: #737a75; --line: #dde2de;
+  color-scheme: light;
+  --bg: #f4f6f4; --surface: #ffffff; --surface-2: #f8faf8; --ink: #141816; --ink-2: #4b524d; --muted: #737a75; --line: #dde2de;
   --accent: #0f6b5c; --accent-ink: #ffffff; --accent-soft: #e2f0ec;
-  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --band: #edf0ed;
-  --hot: #d03b3b; --warm: #a86f00; --cold: #5d7392; --good: #0b8a0b;
+  --s1: #2a78d6; --s2: #eb6834; --band: #edf0ed; --done: #0f6b5c; --done-soft: #dcefe9;
+  --hot: #d03b3b; --hot-soft: #fbe9e9; --warm: #a86f00; --cold: #5d7392; --good: #0b8a0b; --ai: #5b4bc4; --ai-soft: #efedfb; --ai-line: #d9d4f5;
+  --now-soft: #e8f1fc; --slow-soft: #fdf0e3; --slow-ink: #a3501a; --lost-col: #fdf6f6; --tip-ink: #ffffff;
   --f-display: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
   --f-body: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
   --f-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
 }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
-  --bg: #0f1211; --surface: #181c1a; --surface-2: #1d221f; --ink: #edf1ee; --ink-2: #b6bdb7; --muted: #8a918b; --line: #2b312d;
-  --accent: #52c3ad; --accent-ink: #0f1211; --accent-soft: #1b2e29; --s1: #3987e5; --s2: #d95926; --s3: #199e70; --band: #1d221f;
-  --hot: #e66767; --warm: #fab219; --cold: #8fa6c6; --good: #3fbf3f; color-scheme: dark; } }
-:root[data-theme="dark"] {
-  --bg: #0f1211; --surface: #181c1a; --surface-2: #1d221f; --ink: #edf1ee; --ink-2: #b6bdb7; --muted: #8a918b; --line: #2b312d;
-  --accent: #52c3ad; --accent-ink: #0f1211; --accent-soft: #1b2e29; --s1: #3987e5; --s2: #d95926; --s3: #199e70; --band: #1d221f;
-  --hot: #e66767; --warm: #fab219; --cold: #8fa6c6; --good: #3fbf3f; color-scheme: dark; }
-
 * { box-sizing: border-box; }
+body.dark {
+  color-scheme: dark;
+  --bg: #0f1211; --surface: #181c1a; --surface-2: #1d221f; --ink: #edf1ee; --ink-2: #b6bdb7; --muted: #8a918b; --line: #2b312d;
+  --accent: #52c3ad; --accent-ink: #0f1211; --accent-soft: #1b2e29; --s1: #3987e5; --s2: #d95926; --band: #222824; --done: #52c3ad; --done-soft: #183a33;
+  --hot: #e66767; --hot-soft: #3a1f1f; --warm: #fab219; --cold: #8fa6c6; --good: #3fbf3f; --ai: #a99cf2; --ai-soft: #221f36; --ai-line: #3a3460;
+  --now-soft: #16283f; --slow-soft: #3a2a18; --slow-ink: #f0a36a; --lost-col: #2a1c1c; --tip-ink: #0f1211;
+}
 body { background: var(--bg); color: var(--ink); font: 14.5px/1.5 var(--f-body); }
-.shell { display: grid; grid-template-columns: 220px minmax(0, 1fr); min-height: 100vh; }
-nav.side { background: var(--surface); border-right: 1px solid var(--line); padding: 18px 12px; display: flex; flex-direction: column; gap: 4px;
-  position: sticky; top: env(safe-area-inset-top, 0px); height: 100vh; }
-.brand { display: flex; gap: 10px; align-items: center; padding: 4px 8px 16px; }
+.shell { display: grid; grid-template-columns: 228px minmax(0, 1fr); min-height: 100vh; }
+nav.side { background: var(--surface); border-right: 1px solid var(--line); padding: 18px 12px; display: flex; flex-direction: column; gap: 2px;
+  position: sticky; top: env(safe-area-inset-top, 0px); height: 100vh; overflow-y: auto; }
+.brand { display: flex; gap: 10px; align-items: center; padding: 4px 8px 14px; }
 .logo { width: 30px; height: 30px; border-radius: 8px; background: var(--accent); display: grid; place-items: center; }
-.brand b { font: 800 1.05rem var(--f-display); letter-spacing: -0.01em; }
+.brand b { font: 800 1.05rem var(--f-display); }
 .brand span { display: block; font: 0.72rem var(--f-mono); color: var(--muted); }
+.navgroup { font: 600 0.66rem var(--f-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); padding: 12px 10px 4px; }
 nav.side button { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; text-align: left; background: none; border: 0;
-  padding: 9px 10px; border-radius: 8px; font: 600 0.92rem var(--f-body); color: var(--ink-2); cursor: pointer; }
+  padding: 8px 10px; border-radius: 8px; font: 600 0.9rem var(--f-body); color: var(--ink-2); cursor: pointer; }
 nav.side button:hover { background: var(--surface-2); color: var(--ink); }
 nav.side button[aria-current="page"] { background: var(--accent-soft); color: var(--ink); }
-nav.side button:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button:focus-visible, select:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .badge { font: 600 0.7rem var(--f-mono); background: var(--hot); color: #fff; border-radius: 999px; padding: 1px 7px; }
-.side .foot { margin-top: auto; font-size: 0.75rem; color: var(--muted); padding: 8px; border-top: 1px solid var(--line); }
-@media (max-width: 860px) {
+.side .foot { margin-top: auto; font-size: 0.75rem; color: var(--muted); padding: 10px 8px 0; border-top: 1px solid var(--line); }
+@media (max-width: 900px) {
   .shell { grid-template-columns: minmax(0, 1fr); }
   nav.side { position: static; height: auto; flex-direction: row; overflow-x: auto; padding: 8px 12px; border-right: 0; border-bottom: 1px solid var(--line); }
-  .brand, .side .foot { display: none; }
+  .brand, .side .foot, .navgroup { display: none; }
   nav.side button { width: auto; white-space: nowrap; }
 }
-
 main { padding-inline: 16px; padding-block: 18px 48px; min-width: 0; }
-@media (min-width: 861px) { main { padding-inline: 28px; } }
-.topbar { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; margin-bottom: 18px; }
-.topbar h1 { font: 800 1.45rem/1.2 var(--f-display); margin: 0; letter-spacing: -0.01em; }
-.topbar .sub { color: var(--ink-2); font-size: 0.88rem; }
+@media (min-width: 901px) { main { padding-inline: 28px; } }
+.topbar { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.topbar h1 { font: 800 1.45rem/1.2 var(--f-display); margin: 0; }
+.topbar .sub { color: var(--ink-2); font-size: 0.88rem; max-width: 70ch; }
 .demo { font: 600 0.7rem var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--warm); border: 1px dashed currentColor; border-radius: 6px; padding: 3px 8px; }
 .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-select, input[type="search"] { font: 0.88rem var(--f-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; }
-.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+select, input[type="search"], input[type="text"], input[type="number"] { font: 0.88rem var(--f-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; flex-wrap: wrap; }
 .seg button { font: 600 0.8rem var(--f-body); background: var(--surface); color: var(--ink-2); border: 0; padding: 7px 10px; cursor: pointer; }
 .seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
 
@@ -61,16 +61,21 @@ section.view { display: grid; gap: 16px; }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0; }
 .card h2 { font: 700 1rem/1.3 var(--f-display); margin: 0; }
 .card .hint { color: var(--ink-2); font-size: 0.84rem; margin: 2px 0 10px; }
+.cardhead { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: start; }
 .g2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 16px; }
-.g3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 16px; }
 .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 12px; }
 .kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 4px; }
 .kpi .l { font-size: 0.8rem; color: var(--ink-2); }
-.kpi .v { font: 600 1.55rem/1.1 var(--f-mono); font-variant-numeric: tabular-nums; }
+.kpi .v { font: 600 1.5rem/1.1 var(--f-mono); font-variant-numeric: tabular-nums; }
 .kpi .d { font: 0.75rem var(--f-mono); color: var(--muted); }
-.up { color: var(--good); } .down { color: var(--hot); }
-.leak { border-color: var(--hot); }
-.leak .v { color: var(--hot); }
+.up { color: var(--good); }
+.kpi.leak { border-color: var(--hot); } .kpi.leak .v { color: var(--hot); }
+
+.ai { background: var(--ai-soft); border: 1px solid var(--ai-line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 8px; }
+.ai .who { font: 600 0.72rem var(--f-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ai); display: flex; gap: 8px; align-items: center; }
+.ai p { margin: 0; max-width: 80ch; }
+.ai ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.ai .ev { font: 0.75rem var(--f-mono); color: var(--ai); }
 
 .chart svg { display: block; width: 100%; height: auto; }
 svg text { fill: var(--muted); font: 11px var(--f-mono); }
@@ -78,7 +83,7 @@ svg .grid { stroke: var(--line); }
 .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.8rem; color: var(--ink-2); margin-top: 6px; }
 .legend i { display: inline-block; width: 12px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
 .legend i.box { height: 10px; width: 10px; }
-#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font: 12px/1.45 var(--f-mono); padding: 7px 9px; border-radius: 6px; z-index: 20; max-width: 260px; }
+#tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--tip-ink); font: 12px/1.45 var(--f-mono); padding: 7px 9px; border-radius: 6px; z-index: 20; max-width: 280px; }
 
 .tbl { overflow-x: auto; }
 table { border-collapse: collapse; width: 100%; font-size: 0.88rem; }
@@ -92,86 +97,116 @@ tr.click { cursor: pointer; } tr.click:hover td { background: var(--surface-2); 
 .chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
 .t-hot { color: var(--hot); } .t-warm { color: var(--warm); } .t-cold { color: var(--cold); }
 .tag { font: 600 0.7rem var(--f-mono); color: var(--accent); white-space: nowrap; }
+.lbl { font: 600 0.7rem var(--f-mono); border-radius: 4px; padding: 1px 6px; background: var(--band); color: var(--ink-2); white-space: nowrap; }
 .src { font: 0.75rem var(--f-mono); color: var(--ink-2); background: var(--band); border-radius: 4px; padding: 1px 6px; white-space: nowrap; }
 .btn { font: 600 0.8rem var(--f-body); border-radius: 7px; padding: 6px 10px; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--ink); white-space: nowrap; }
 .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .btn:hover { border-color: var(--accent); }
+.btn.sm { padding: 4px 8px; font-size: 0.75rem; }
 
 /* queue */
-.qitem { display: grid; grid-template-columns: 44px minmax(150px, 1.1fr) minmax(130px, 0.8fr) minmax(200px, 1.6fr) auto; gap: 12px; align-items: center;
-  padding: 12px 14px; border-bottom: 1px solid var(--line); }
+.qitem { display: grid; grid-template-columns: 44px minmax(150px, 1.1fr) minmax(120px, 0.7fr) minmax(200px, 1.6fr) auto; gap: 12px; align-items: center; padding: 12px 14px; border-bottom: 1px solid var(--line); }
 .qitem:last-child { border-bottom: 0; }
 .pri { font: 700 0.78rem var(--f-mono); border-radius: 6px; text-align: center; padding: 4px 0; background: var(--band); color: var(--ink-2); }
 .pri.p1 { background: var(--hot); color: #fff; }
-.wait { font: 600 0.8rem var(--f-mono); }
-.wait.late { color: var(--hot); }
+.wait { font: 600 0.8rem var(--f-mono); } .wait.late { color: var(--hot); }
 .acts { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 @media (max-width: 760px) { .qitem { grid-template-columns: 40px 1fr; } .qitem > :nth-child(n+3) { grid-column: 2; } .acts { justify-content: flex-start; } }
 
-/* kanban */
-.kanban { display: grid; grid-template-columns: repeat(6, minmax(170px, 1fr)); gap: 12px; overflow-x: auto; padding-bottom: 6px; }
-.kcol { background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-width: 170px; }
-.kcol h3 { margin: 0 0 4px; font: 700 0.85rem var(--f-display); display: flex; justify-content: space-between; }
-.kcol .sum { font: 0.72rem var(--f-mono); color: var(--muted); margin-bottom: 8px; }
-.kcard { background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--cold); border-radius: 7px; padding: 8px 9px; margin-bottom: 8px; cursor: pointer; display: grid; gap: 3px; font-size: 0.82rem; }
+/* journeys (trace-like) */
+.jgrid { display: grid; grid-template-columns: 190px repeat(6, minmax(92px, 1fr)); min-width: 860px; }
+.jhead { font: 600 0.68rem var(--f-mono); letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); padding: 6px 6px 8px; border-bottom: 1px solid var(--line); }
+.jrow { display: contents; cursor: pointer; }
+.jcell { padding: 10px 6px; border-bottom: 1px solid var(--line); display: flex; align-items: center; min-width: 0; }
+.jrow:hover .jcell { background: var(--surface-2); }
+.jrow.open .jcell { background: var(--accent-soft); }
+.who { display: grid; gap: 1px; min-width: 0; }
+.who b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.step { position: relative; flex: 1; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font: 600 0.72rem var(--f-mono); }
+.step.done { background: var(--done-soft); color: var(--done); }
+.step.now { background: var(--now-soft); color: var(--s1); outline: 2px solid var(--s1); outline-offset: -2px; }
+.step.lost { background: var(--hot-soft); color: var(--hot); }
+.step.slow { background: var(--slow-soft); color: var(--slow-ink); }
+.step.none { background: transparent; border: 1px dashed var(--line); color: var(--muted); }
+.jcell + .jcell .step::before { content: ""; position: absolute; left: -7px; top: 50%; width: 8px; height: 2px; background: var(--line); }
+.detail { grid-column: 1 / -1; border-bottom: 1px solid var(--line); background: var(--surface-2); padding: 16px; display: grid; gap: 14px; }
+.wfall { display: grid; gap: 6px; }
+.wbar { display: grid; grid-template-columns: 150px 1fr 80px; gap: 10px; align-items: center; font-size: 0.84rem; cursor: pointer; border-radius: 6px; padding: 2px 4px; }
+.wbar:hover, .wbar.sel { background: var(--surface); }
+.wbar .track { position: relative; height: 18px; background: var(--band); border-radius: 4px; }
+.wbar .track i { position: absolute; top: 3px; height: 12px; border-radius: 3px; min-width: 4px; }
+.wbar .d { font: 600 0.78rem var(--f-mono); text-align: right; }
+.wbar.late .d { color: var(--hot); }
+.axis { display: grid; grid-template-columns: 150px 1fr 80px; gap: 10px; font: 0.7rem var(--f-mono); color: var(--muted); }
+.axis div { display: flex; justify-content: space-between; width: 100%; }
+.spaninfo { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: grid; gap: 8px; font-size: 0.86rem; }
+.spaninfo .kv { display: grid; grid-template-columns: 130px 1fr; gap: 4px 12px; }
+.spaninfo .kv span:nth-child(odd) { color: var(--muted); }
+
+/* pipeline */
+.kanban { display: grid; grid-template-columns: repeat(7, minmax(165px, 1fr)); gap: 10px; overflow-x: auto; padding-bottom: 6px; }
+.kcol { background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 10px; min-width: 165px; display: flex; flex-direction: column; gap: 8px; }
+.kcol.lost { background: var(--lost-col); }
+.kcol h3 { margin: 0; font: 700 0.85rem var(--f-display); display: flex; justify-content: space-between; }
+.kstats { display: grid; gap: 2px; font: 0.7rem var(--f-mono); color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+.kstats b { color: var(--ink-2); }
+.kconv { font: 600 0.7rem var(--f-mono); color: var(--done); }
+.kcard { background: var(--surface); border: 1px solid var(--line); border-left: 3px solid var(--cold); border-radius: 7px; padding: 8px 9px; cursor: pointer; display: grid; gap: 3px; font-size: 0.82rem; }
 .kcard.hot { border-left-color: var(--hot); } .kcard.warm { border-left-color: var(--warm); }
 .kcard:hover { border-color: var(--accent); }
+.kcard .late { color: var(--hot); font: 600 0.72rem var(--f-mono); }
 
-/* profile */
-.phead { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
-.avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font: 800 1.2rem var(--f-display); }
-.phead h2 { font: 800 1.3rem var(--f-display); margin: 0; }
-.facts { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 0.84rem; color: var(--ink-2); }
-.jtabs { display: flex; gap: 6px; flex-wrap: wrap; }
-.jtabs button { font: 600 0.8rem var(--f-body); border: 1px solid var(--line); background: var(--surface); color: var(--ink-2); border-radius: 999px; padding: 4px 12px; cursor: pointer; }
-.jtabs button[aria-pressed="true"] { border-color: var(--accent); color: var(--ink); background: var(--accent-soft); }
-.wf { display: grid; gap: 0; }
-.wrow { display: grid; grid-template-columns: 150px 1fr 70px; gap: 10px; align-items: center; padding: 5px 0; border-top: 1px dashed var(--line); font-size: 0.84rem; }
-.wrow .lbl { display: flex; gap: 6px; align-items: center; min-width: 0; }
-.wrow .lbl span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
-.track { position: relative; height: 16px; background: var(--band); border-radius: 4px; }
-.track i { position: absolute; top: 3px; height: 10px; border-radius: 3px; min-width: 3px; }
-.wrow .dur { font: 600 0.78rem var(--f-mono); text-align: right; }
-.wrow.slow .dur { color: var(--hot); }
-.chat { display: grid; gap: 8px; max-height: 420px; overflow-y: auto; padding-right: 4px; }
-.bubble { max-width: 80%; padding: 8px 11px; border-radius: 12px; font-size: 0.86rem; display: grid; gap: 2px; }
-.bubble.in { background: var(--surface-2); border: 1px solid var(--line); justify-self: start; border-bottom-left-radius: 4px; }
-.bubble.out { background: var(--accent-soft); justify-self: end; border-bottom-right-radius: 4px; }
-.bubble .meta { font: 0.7rem var(--f-mono); color: var(--muted); }
-.ev { justify-self: center; font: 0.72rem var(--f-mono); color: var(--muted); background: var(--band); border-radius: 999px; padding: 2px 10px; }
+/* log */
+.logrow { display: grid; grid-template-columns: 120px 130px 150px 1fr 110px; gap: 10px; padding: 8px 10px; border-bottom: 1px solid var(--line); font-size: 0.84rem; align-items: center; min-width: 760px; }
+.logrow .t { font: 0.78rem var(--f-mono); color: var(--muted); }
+.ek { font: 600 0.72rem var(--f-mono); }
+.ek.msg { color: var(--s1); } .ek.reply { color: var(--accent); } .ek.ai { color: var(--s2); } .ek.biz { color: var(--good); } .ek.alert { color: var(--hot); } .ek.sys { color: var(--muted); }
 
-/* funnel */
-.frow { display: grid; grid-template-columns: 120px 1fr 170px; gap: 10px; align-items: center; margin: 6px 0; }
-.frow .bar { height: 24px; background: var(--s1); border-radius: 0 4px 4px 0; }
-.frow .stat { font: 0.8rem var(--f-mono); color: var(--ink-2); }
-.frow.worst .stat b { color: var(--hot); }
-.fstep { font: 0.74rem var(--f-mono); color: var(--muted); padding-left: 130px; }
-@media (max-width: 560px) { .frow { grid-template-columns: 90px 1fr; } .frow .stat { grid-column: 2; } .fstep { padding-left: 0; } }
+/* dashboards */
+.dlist { display: flex; flex-wrap: wrap; gap: 8px; }
+.panels { display: grid; grid-template-columns: repeat(12, 1fr); gap: 12px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px; min-width: 0; position: relative; }
+.panel h3 { margin: 0 0 6px; font: 700 0.9rem var(--f-display); display: flex; justify-content: space-between; gap: 6px; }
+.panel .grip { font: 0.75rem var(--f-mono); color: var(--muted); cursor: grab; }
+.w4 { grid-column: span 4; } .w6 { grid-column: span 6; } .w8 { grid-column: span 8; } .w12 { grid-column: span 12; }
+@media (max-width: 900px) { .w4, .w6, .w8 { grid-column: span 12; } }
+.big { font: 600 1.8rem var(--f-mono); }
+.panel svg { display: block; width: 100%; height: auto; }
 
-/* integrations */
-.int { display: grid; grid-template-columns: 40px 1fr auto; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); }
-.int:last-child { border-bottom: 0; }
-.ico { width: 36px; height: 36px; border-radius: 9px; display: grid; place-items: center; font: 800 0.8rem var(--f-mono); background: var(--band); color: var(--ink-2); }
-.state { font: 600 0.75rem var(--f-mono); }
-.state.ok { color: var(--good); } .state.off { color: var(--muted); } .state.warn { color: var(--warm); }
+/* settings */
+.stagetbl input[type="text"] { width: 100%; min-width: 120px; }
+.stagetbl input[type="number"] { width: 80px; }
+.stagetbl select { min-width: 150px; }
+.handle { font: 0.9rem var(--f-mono); color: var(--muted); cursor: grab; }
 pre.code { margin: 0; background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 12px; overflow-x: auto; font: 0.8rem/1.55 var(--f-mono); }
-.kv { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; font-size: 0.88rem; }
-.kv span:nth-child(even) { font-family: var(--f-mono); text-align: right; }
-.toast { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 10px 14px; border-radius: 8px; font-size: 0.86rem; z-index: 30; }
+.mapchips { display: flex; flex-wrap: wrap; gap: 6px; }
+.toast { position: fixed; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--tip-ink); padding: 10px 14px; border-radius: 8px; font-size: 0.86rem; z-index: 30; }
+.chat { display: grid; gap: 8px; max-height: 380px; overflow-y: auto; }
+.bubble { max-width: 82%; padding: 8px 11px; border-radius: 12px; font-size: 0.86rem; display: grid; gap: 2px; }
+.bubble.in { background: var(--surface-2); border: 1px solid var(--line); justify-self: start; }
+.bubble.out { background: var(--accent-soft); justify-self: end; }
+.bubble .meta { font: 0.7rem var(--f-mono); color: var(--muted); }
+.evline { justify-self: center; font: 0.72rem var(--f-mono); color: var(--muted); background: var(--band); border-radius: 999px; padding: 2px 10px; }
 </style>
 
 <div class="shell">
   <nav class="side" aria-label="Main">
-    <div class="brand"><div class="logo"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M1 10h4l2-6 4 10 2-4h4" fill="none" stroke="var(--accent-ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <div class="brand"><div class="logo"><svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true"><path d="M1 10h4l2-6 4 10 2-4h4" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       <div><b>LeadPulse</b><span>working name</span></div></div>
-    <button data-view="overview" aria-current="page">Overview</button>
+    <div class="navgroup">Today</div>
     <button data-view="queue">Action queue <span class="badge" id="qBadge">0</span></button>
+    <button data-view="overview">Overview</button>
+    <div class="navgroup">Leads</div>
+    <button data-view="journeys">Journeys</button>
     <button data-view="pipeline">Pipeline</button>
     <button data-view="contacts">Contacts</button>
-    <button data-view="profile">Contact profile</button>
+    <button data-view="log">Activity log</button>
+    <div class="navgroup">Improve</div>
     <button data-view="bottlenecks">Bottlenecks</button>
-    <button data-view="settings">Sources &amp; rules</button>
+    <button data-view="dashboards">Dashboards &amp; reports</button>
+    <div class="navgroup">Setup</div>
+    <button data-view="settings">Pipelines &amp; rules</button>
+    <button data-view="sources">Sources</button>
     <div class="foot">Mockup with fake data. Nothing here is real.</div>
   </nav>
 
@@ -180,36 +215,47 @@ pre.code { margin: 0; background: var(--surface-2); border: 1px solid var(--line
       <div><h1 id="vTitle">Overview</h1><div class="sub" id="vSub"></div></div>
       <div class="controls">
         <span class="demo">Demo data</span>
-        <select id="clinic" aria-label="Clinic"><option>Glow Aesthetics · Kapitolyo</option><option>Glow Aesthetics · BGC</option></select>
-        <select id="range" aria-label="Date range"><option value="30">Last 30 days</option><option value="14">Last 14 days</option></select>
+        <button class="btn" id="themeBtn" aria-pressed="false">Dark mode</button>
+        <select id="pipeSel" aria-label="Pipeline"></select>
+        <select aria-label="Branch"><option>Kapitolyo branch</option><option>BGC branch</option><option>All branches</option></select>
       </div>
     </div>
-
-    <!-- OVERVIEW -->
-    <section class="view" id="overview">
-      <div class="kpis" id="kpis"></div>
-      <div class="g2">
-        <div class="card"><h2>First reply time</h2><p class="hint">Daily median (p50) and worst 10% (p90), log scale. The dashed line marks when the after-hours AI was switched on.</p><div class="chart" id="cFrt"></div>
-          <div class="legend"><span><i style="background:var(--s1)"></i>p50</span><span><i style="background:var(--s2)"></i>p90</span></div></div>
-        <div class="card"><h2>When inquiries arrive</h2><p class="hint">Conversations by hour. Shaded hours are when the clinic is closed.</p><div class="chart" id="cHour"></div>
-          <div class="legend"><span><i class="box" style="background:var(--s1)"></i>answered in time</span><span><i class="box" style="background:var(--s2)"></i>slow or never</span><span><i class="box" style="background:var(--band);border:1px solid var(--line)"></i>closed</span></div></div>
-      </div>
-      <div class="g2">
-        <div class="card"><h2>Where the money leaks this month</h2><p class="hint">Estimated: leads lost at each step × typical conversion × average treatment value.</p><div class="tbl"><table id="tLeaks"></table></div></div>
-        <div class="card"><h2>Which sources bring paying patients</h2><p class="hint">All sources, not only Meta. Revenue comes from payments matched to each journey.</p><div class="tbl"><table id="tSources"></table></div></div>
-      </div>
-    </section>
 
     <!-- QUEUE -->
     <section class="view" id="queue" hidden>
       <div class="card" style="padding:0">
         <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line)">
-          <div class="seg" role="group" aria-label="Filter queue">
+          <div class="seg" role="group" aria-label="Filter">
             <button aria-pressed="true" data-q="all">All</button><button aria-pressed="false" data-q="waiting">Waiting for reply</button><button aria-pressed="false" data-q="followup">Follow-ups</button><button aria-pressed="false" data-q="returning">Returning</button>
           </div>
-          <span class="small">Sorted by priority, then wait time. Buttons are mock actions.</span>
+          <span class="small">Buttons open the real chat or the clinic's own system (mock links).</span>
         </div>
         <div id="qList"></div>
+      </div>
+    </section>
+
+    <!-- OVERVIEW -->
+    <section class="view" id="overview" hidden>
+      <div class="ai" id="aiWeek"></div>
+      <div class="kpis" id="kpis"></div>
+      <div class="g2">
+        <div class="card"><h2>First reply time</h2><p class="hint">Daily median (p50) and worst 10% (p90), log scale. Dashed line: after-hours AI switched on.</p><div class="chart" id="cFrt"></div>
+          <div class="legend"><span><i style="background:var(--s1)"></i>p50</span><span><i style="background:var(--s2)"></i>p90</span></div></div>
+        <div class="card"><h2>Pipeline at a glance</h2><p class="hint">Open journeys per stage in the selected pipeline, and the share that moved on last month.</p><div id="miniFunnel"></div></div>
+      </div>
+    </section>
+
+    <!-- JOURNEYS -->
+    <section class="view" id="journeys" hidden>
+      <div class="card">
+        <div class="cardhead">
+          <div><h2>Every lead, left to right</h2><p class="hint">One row per journey, like a trace. Green = step done, blue = where they are now, red = where they stopped, orange = step took longer than target. Click a row for the waterfall, then click a step for details.</p></div>
+          <div class="controls">
+            <div class="seg" role="group" aria-label="Status"><button aria-pressed="true" data-js="all">All</button><button aria-pressed="false" data-js="open">Open</button><button aria-pressed="false" data-js="won">Won</button><button aria-pressed="false" data-js="lost">Lost</button></div>
+            <select id="jStop" aria-label="Stopped at"><option value="">Stopped at any stage</option></select>
+          </div>
+        </div>
+        <div class="tbl"><div class="jgrid" id="jGrid"></div></div>
       </div>
     </section>
 
@@ -222,69 +268,96 @@ pre.code { margin: 0; background: var(--surface-2); border: 1px solid var(--line
     <section class="view" id="contacts" hidden>
       <div class="card">
         <div class="controls" style="margin-bottom:12px">
-          <input type="search" id="cSearch" placeholder="Search name or interest" aria-label="Search contacts">
-          <select id="cTemp" aria-label="Temperature"><option value="">Any label</option><option>hot</option><option>warm</option><option>cold</option></select>
-          <select id="cStage" aria-label="Stage"><option value="">Any stage</option></select>
-          <select id="cSrc" aria-label="Source"><option value="">Any source</option></select>
+          <input type="search" id="cSearch" placeholder="Search name or treatment" aria-label="Search">
+          <select id="cTemp" aria-label="Label"><option value="">Any label</option><option>hot</option><option>warm</option><option>cold</option></select>
+          <select id="cTag" aria-label="Tag"><option value="">Any tag</option><option>VIP</option><option>Price-sensitive</option><option>Wants weekend</option><option>Rebook due</option></select>
           <label class="small"><input type="checkbox" id="cRet"> Returning only</label>
+          <button class="btn sm" onclick="toast('CSV export (mock)')">Export CSV</button>
         </div>
         <div class="tbl"><table id="tContacts"></table></div>
       </div>
     </section>
 
-    <!-- PROFILE -->
-    <section class="view" id="profile" hidden>
-      <div class="card"><div class="phead" id="pHead"></div></div>
-      <div class="jtabs" id="jTabs" role="group" aria-label="Journeys"></div>
-      <div class="g2">
-        <div class="card"><h2>Journey trace</h2><p class="hint">Each step on one timeline, like a request trace. Bar = how long that step took. Red = slower than the clinic's target.</p><div class="wf" id="wf"></div>
-          <div class="legend"><span><i class="box" style="background:var(--s1)"></i>patient</span><span><i class="box" style="background:var(--accent)"></i>staff</span><span><i class="box" style="background:var(--s2)"></i>AI</span><span><i class="box" style="background:var(--muted)"></i>system / booking / payment</span></div></div>
-        <div class="card"><h2>Conversation</h2><p class="hint">Messages from every channel, with booking and payment events in line.</p><div class="chat" id="chat"></div></div>
+    <!-- LOG -->
+    <section class="view" id="log" hidden>
+      <div class="card">
+        <div class="cardhead">
+          <div><h2>Everything that happened</h2><p class="hint">Messages, replies, labels, bookings, payments and alerts in one stream, like logs. Filter, search, click to open the lead.</p></div>
+          <div class="controls">
+            <div class="seg" role="group" aria-label="Type"><button aria-pressed="true" data-lt="">All</button><button aria-pressed="false" data-lt="msg">Messages</button><button aria-pressed="false" data-lt="biz">Bookings &amp; payments</button><button aria-pressed="false" data-lt="alert">Alerts</button><button aria-pressed="false" data-lt="sys">Labels</button></div>
+            <input type="search" id="lSearch" placeholder="Search" aria-label="Search log">
+          </div>
+        </div>
+        <div class="tbl" id="logList"></div>
       </div>
     </section>
 
     <!-- BOTTLENECKS -->
     <section class="view" id="bottlenecks" hidden>
+      <div class="ai" id="aiDiag"></div>
       <div class="g2">
-        <div class="card"><h2>Funnel</h2><p class="hint">Journeys reaching each stage, share kept from the step before, and median time per step.</p><div id="funnel"></div></div>
-        <div class="card"><h2>Time spent per step</h2><p class="hint">Median and p90 hours between stages. The longest bar is the bottleneck.</p><div class="chart" id="cSteps"></div>
-          <div class="legend"><span><i class="box" style="background:var(--s1)"></i>median</span><span><i class="box" style="background:var(--s2)"></i>p90</span></div></div>
+        <div class="card"><h2>Funnel</h2><p class="hint">Journeys reaching each stage in the selected pipeline, and median time per step.</p><div id="funnel"></div></div>
+        <div class="card"><h2>Why leads were lost</h2><p class="hint">Lost reason from the label and AI summary, last 30 days.</p><div class="chart" id="cLost"></div></div>
       </div>
-      <div class="card"><h2>Slowest open journeys</h2><p class="hint">Open journeys stuck longest in their current stage.</p><div class="tbl"><table id="tStuck"></table></div></div>
+    </section>
+
+    <!-- DASHBOARDS -->
+    <section class="view" id="dashboards" hidden>
+      <div class="card">
+        <div class="cardhead">
+          <div><h2>Dashboards</h2><p class="hint">Fixed screens come with the app. Below are custom dashboards: start from a template, then move, resize and add panels. Panels are built in Metabase and shown here.</p></div>
+          <div class="controls"><button class="btn" onclick="toast('Opens the dashboard editor in Metabase (mock)')">Edit layout</button><button class="btn" onclick="toast('PDF report generated (mock)')">Export PDF</button><button class="btn" onclick="toast('Monthly email scheduled (mock)')">Schedule email</button><button class="btn primary" onclick="toast('New dashboard from template (mock)')">+ New dashboard</button></div>
+        </div>
+        <div class="dlist" id="dList"></div>
+      </div>
+      <div class="panels" id="panels"></div>
     </section>
 
     <!-- SETTINGS -->
     <section class="view" id="settings" hidden>
-      <div class="g2">
-        <div class="card"><h2>Sources</h2><p class="hint">Everything feeds the same contacts, journeys and events. Meta is one source among several.</p><div id="ints"></div></div>
-        <div class="card"><h2>Targets and hours</h2><p class="hint">From the clinic pack, with this clinic's overrides.</p>
-          <div class="kv">
-            <span>Open hours</span><span>Mon–Sat 09:00–20:00</span>
-            <span>First reply target</span><span>5 min</span>
-            <span>Hot lead alert</span><span>10 min → front desk</span>
-            <span>Escalation</span><span>30 min → manager</span>
-            <span>New journey after</span><span>45 days quiet</span>
-            <span>Lead goes cold after</span><span>3 days quiet</span>
-          </div></div>
+      <div class="card">
+        <div class="cardhead">
+          <div><h2>Pipeline: <span id="setPipeName"></span></h2><p class="hint">Each service line can have its own pipeline. Stages, targets and alerts are edited here by the clinic. No code.</p></div>
+          <div class="controls"><button class="btn" onclick="toast('Pipeline duplicated (mock)')">Duplicate</button><button class="btn primary" onclick="toast('Saved (mock)')">Save changes</button></div>
+        </div>
+        <div class="tbl"><table class="stagetbl" id="stageTbl"></table></div>
+        <button class="btn sm" style="margin-top:10px" onclick="toast('Stage added (mock)')">+ Add stage</button>
       </div>
       <div class="g2">
-        <div class="card"><h2>Custom rules</h2><p class="hint">Client-specific logic without code.</p>
-<pre class="code">custom_rules:
-  - name: vip
-    if:   { ">": [{ "var": "contact.lifetime_value" }, 50000] }
-    then: { add_tag: vip, priority: 1, notify: manager }
-  - name: wants_dr_cruz
-    if:   { "in": ["dr cruz", { "var": "last_message_lower" }] }
-    then: { set_temperature: hot, assign: dr-cruz-desk }</pre></div>
-        <div class="card"><h2>API for custom sources</h2><p class="hint">For their POS, clinic system or n8n.</p>
-<pre class="code">POST /api/v1/events
-X-Api-Key: rk_live_••••••••3f2a
+        <div class="card"><h2>Which leads go into which pipeline</h2><p class="hint">Picked automatically from the treatment the patient asks about. Staff can move a lead by hand.</p><div id="mapTbl"></div></div>
+        <div class="card"><h2>Labels and tags</h2><p class="hint">Hot / warm / cold comes from the scoring rules. Tags are extra labels the clinic defines.</p>
+          <div class="tbl"><table>
+            <thead><tr><th>Tag</th><th>Added when</th></tr></thead>
+            <tbody>
+              <tr><td><span class="lbl">VIP</span></td><td class="small">Lifetime spend over ₱50,000</td></tr>
+              <tr><td><span class="lbl">Price-sensitive</span></td><td class="small">AI summary finds a price objection</td></tr>
+              <tr><td><span class="lbl">Wants weekend</span></td><td class="small">Asks for Saturday or Sunday</td></tr>
+              <tr><td><span class="lbl">Rebook due</span></td><td class="small">Botox paid 4+ months ago</td></tr>
+            </tbody></table></div>
+          <button class="btn sm" style="margin-top:10px" onclick="toast('New tag (mock)')">+ New tag</button>
+        </div>
+      </div>
+      <div class="g2">
+        <div class="card"><h2>Alerts</h2><p class="hint">Who gets told, when, and where.</p>
+          <div class="tbl"><table>
+            <thead><tr><th>When</th><th>Send to</th><th>Via</th></tr></thead>
+            <tbody>
+              <tr><td>Hot lead waiting 10 min (open hours)</td><td>Front desk</td><td>Telegram</td></tr>
+              <tr><td>Any lead waiting 30 min</td><td>Manager</td><td>Telegram</td></tr>
+              <tr><td>No-show, 15 min after appointment</td><td>Front desk</td><td>Telegram</td></tr>
+              <tr><td>Booked stage over target</td><td>Manager</td><td>Email digest</td></tr>
+            </tbody></table></div></div>
+        <div class="card"><h2>Quick links</h2><p class="hint">What the "Open" buttons do. Placeholders are filled per lead.</p>
+<pre class="code">messenger:  Business Suite inbox → this conversation
+whatsapp:   https://wa.me/{phone}
+clinic_system: https://clinic.example.ph/patients?phone={phone}
+booking_link:  https://book.example.ph/glow?ref={journey_id}</pre></div>
+      </div>
+    </section>
 
-{ "event_type": "payment_received",
-  "contact": { "phone": "+639171234567" },
-  "value": 12000,
-  "props": { "invoice": "INV-20391" } }</pre></div>
-      </div>
+    <!-- SOURCES -->
+    <section class="view" id="sources" hidden>
+      <div class="card"><h2>Sources</h2><p class="hint">Everything feeds the same contacts, journeys and events. Meta is one source among several.</p><div id="ints"></div></div>
     </section>
   </main>
 </div>
@@ -292,304 +365,353 @@ X-Api-Key: rk_live_••••••••3f2a
 <div class="toast" id="toast" hidden></div>
 
 <script>
-/* ---------------------------------------------------------------- fake data (seeded, clearly fake) */
-let seed = 42; const rnd = () => ((seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296);
+/* ============================================================ fake data (seeded) */
+let seed = 7; const rnd = () => ((seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296);
 const pick = (a) => a[Math.floor(rnd() * a.length)];
-const NAMES = ["Ana Reyes","Bea Santos","Carla Dizon","Dianne Tan","Ella Cruz","Faith Lim","Gela Ramos","Hazel Uy","Ivy Go","Jen Bautista","Kat Mendoza","Lianne Sy","Mae Garcia","Nikki Flores","Olive Aquino","Pia Navarro","Queenie Ong","Rica Torres","Sam Villanueva","Tin Castro","Vina Lopez","Wendy Chua","Yna Pascual","Zoe Rivera","Aly Domingo","Bianca Yap","Cha Robles","Denise Co","Erika Salazar","Joy Manalo","Kim Ocampo","Lara Dela Cruz","Mika Perez","Nina Valdez","Pat Hernandez","Rose Santiago","Sheena Lee","Trish Morales","Aira Jimenez","Belle Ferrer"];
-const INTERESTS = { Botox: 15000, Filler: 25000, Laser: 8000, "Skin booster": 14500, Facial: 3500, Slimming: 30000 };
-const SOURCES = ["Messenger · Botox ad", "Messenger · Laser ad", "Instagram", "WhatsApp", "Website form", "Walk-in (API)", "Referral"];
-const STAGES = ["Inquiry", "Replied", "Qualified", "Booked", "Showed", "Paid"];
-const NOW = new Date("2026-10-04T15:20:00+08:00").getTime();
 const MIN = 60000, H = 60 * MIN, D = 24 * H;
+const NOW = new Date("2026-10-04T15:20:00+08:00").getTime();
 
-const contacts = NAMES.map((name, i) => {
-  const interest = pick(Object.keys(INTERESTS));
-  const stageIx = Math.min(5, Math.floor(rnd() * rnd() * 7));
-  const temp = stageIx >= 3 ? "hot" : rnd() < 0.25 ? "hot" : rnd() < 0.5 ? "warm" : "cold";
-  const returning = rnd() < 0.22;
-  const pastJ = returning ? 1 + Math.floor(rnd() * 2) : 0;
-  const waiting = stageIx < 3 && rnd() < 0.35;
-  const lastAct = NOW - Math.floor(rnd() * (waiting ? 3 * H : 9 * D));
-  return {
-    id: i, name, interest, value: INTERESTS[interest], temp, stage: STAGES[stageIx], stageIx, returning, pastJ,
-    ltv: pastJ * INTERESTS[interest] * (0.8 + rnd() * 0.6), source: pick(SOURCES),
-    channel: null, waiting, waitMin: waiting ? Math.round((NOW - lastAct) / MIN) : 0, lastAct,
-  };
+const PIPELINES = [
+  { id: "inj", name: "Injectables", interests: ["Botox", "Filler", "Skin booster"],
+    stages: [["Inquiry", "first message", 0], ["Replied", "first staff/AI reply", 5], ["Qualified", "asks date, slot or location", 60], ["Consult booked", "booking tool webhook", 1440], ["Showed up", "front desk 'Arrived'", 4320], ["Paid", "payment webhook", 120]] },
+  { id: "laser", name: "Laser & skin packages", interests: ["Laser", "Facial"],
+    stages: [["Inquiry", "first message", 0], ["Replied", "first staff/AI reply", 5], ["Qualified", "asks sessions or schedule", 120], ["Session 1 booked", "booking tool webhook", 2880], ["Package sold", "payment webhook", 1440], ["Package done", "last session marked", 86400]] },
+  { id: "body", name: "Body contouring", interests: ["Slimming"],
+    stages: [["Inquiry", "first message", 0], ["Replied", "first staff/AI reply", 5], ["Assessment booked", "booking tool webhook", 1440], ["Assessment done", "front desk 'Arrived'", 4320], ["Plan accepted", "staff marks accepted", 4320], ["Paid", "payment webhook", 240]] },
+];
+const PRICE = { Botox: 15000, Filler: 25000, "Skin booster": 14500, Laser: 32000, Facial: 3500, Slimming: 30000 };
+const NAMES = ["Ana Reyes","Bea Santos","Carla Dizon","Dianne Tan","Ella Cruz","Faith Lim","Gela Ramos","Hazel Uy","Ivy Go","Jen Bautista","Kat Mendoza","Lianne Sy","Mae Garcia","Nikki Flores","Olive Aquino","Pia Navarro","Queenie Ong","Rica Torres","Sam Villanueva","Tin Castro","Vina Lopez","Wendy Chua","Yna Pascual","Zoe Rivera","Aly Domingo","Bianca Yap","Cha Robles","Denise Co","Erika Salazar","Joy Manalo","Kim Ocampo","Lara Dela Cruz","Mika Perez","Nina Valdez","Pat Hernandez","Rose Santiago","Sheena Lee","Trish Morales","Aira Jimenez","Belle Ferrer","Cams Uy","Dani Lim","Eunice Ko","Gab Reyes","Hannah Sy"];
+const SOURCES = ["Messenger · Botox ad", "Messenger · Laser ad", "Instagram", "WhatsApp", "Website form", "Walk-in (POS API)", "Referral"];
+const LOST = { 1: ["No reply overnight", "Lost in inbox"], 2: ["Price sent, no booking ask", "Went quiet after price"], 3: ["Chose another clinic", "Schedule didn't fit"], 4: ["No-show, not rebooked"], 5: ["Didn't accept plan"] };
+const TAGS = ["VIP", "Price-sensitive", "Wants weekend", "Rebook due"];
+const pipeOf = (interest) => PIPELINES.find((p) => p.interests.includes(interest));
+
+const journeys = NAMES.map((name, i) => {
+  const interest = pick(Object.keys(PRICE)), pipe = pipeOf(interest);
+  const r = rnd(); const outcome = r < 0.28 ? "won" : r < 0.62 ? "lost" : "open";
+  let reached = outcome === "won" ? 5 : outcome === "lost" ? 1 + Math.floor(rnd() * 4) : Math.floor(rnd() * 5);
+  const night = rnd() < 0.4;
+  const durs = pipe.stages.map((s, k) => { if (k === 0) return 0;
+    const base = s[2] || 5; let m = base * (0.2 + rnd() * 1.6);
+    if (k === 1 && night) m = 600 + rnd() * 300; if (k === 1 && !night) m = 2 + rnd() * 40; return Math.round(m); });
+  const total = durs.slice(1, reached + 1).reduce((a, b) => a + b, 0);
+  const start = NOW - total * MIN - Math.floor(rnd() * (outcome === "open" ? 3 : 20)) * D - Math.floor(rnd() * 8) * H;
+  const temp = outcome === "won" ? "hot" : outcome === "lost" ? (rnd() < 0.7 ? "cold" : "warm") : reached >= 2 ? (rnd() < 0.6 ? "hot" : "warm") : pick(["hot", "warm", "cold"]);
+  const waiting = outcome === "open" && reached <= 2 && rnd() < 0.55;
+  const lostAt = outcome === "lost" ? reached + 1 : null;
+  const tags = TAGS.filter(() => rnd() < 0.15);
+  return { id: i, name, interest, pipe, outcome, reached, durs, start, temp, waiting, waitMin: waiting ? Math.round(5 + rnd() * 160) : 0, night,
+    lostAt, lostReason: lostAt ? pick(LOST[Math.min(lostAt, 5)]) : null, source: pick(SOURCES), value: PRICE[interest],
+    returning: rnd() < 0.2, tags, phone: "+63 917 " + String(1000000 + Math.floor(rnd() * 8999999)).replace(/(\d{3})(\d{4})/, "$1 $2") };
 });
-contacts.forEach((c) => { c.channel = c.source.startsWith("Instagram") ? "Instagram" : c.source.startsWith("WhatsApp") ? "WhatsApp" : c.source.startsWith("Messenger") ? "Messenger" : c.source.includes("API") ? "Front desk" : c.source.startsWith("Website") ? "Web form" : "Messenger"; });
-contacts[0] = { ...contacts[0], name: "Ana Reyes", interest: "Botox", value: 15000, temp: "hot", stage: "Qualified", stageIx: 2, returning: true, pastJ: 1, ltv: 15000, source: "Messenger · Botox ad", channel: "Messenger", waiting: true, waitMin: 12, lastAct: NOW - 12 * MIN };
+// Two fixed examples for the walkthrough
+Object.assign(journeys[0], { name: "Ana Reyes", interest: "Botox", pipe: PIPELINES[0], outcome: "won", reached: 5, lostAt: null, lostReason: null, temp: "hot", night: true, waiting: false, returning: true, tags: ["VIP"], source: "Messenger · Botox ad", value: 15000,
+  durs: [0, 718, 9, 22, 2880 + 190, 70], start: NOW - 6 * D - 18 * H });
+Object.assign(journeys[1], { name: "Bea Santos", interest: "Filler", pipe: PIPELINES[0], outcome: "lost", reached: 2, lostAt: 3, lostReason: "Price sent, no booking ask", temp: "cold", night: false, waiting: false, returning: false, tags: ["Price-sensitive"], source: "Instagram", value: 25000,
+  durs: [0, 14, 33, 0, 0, 0], start: NOW - 4 * D - 3 * H });
+journeys.forEach((j) => { j.channel = j.source.startsWith("Instagram") ? "Instagram" : j.source.startsWith("WhatsApp") ? "WhatsApp" : j.source.includes("POS") ? "Front desk" : j.source.startsWith("Website") ? "Web form" : "Messenger";
+  j.stageName = j.pipe.stages[j.reached][0]; [j.pri, j.action] = nextAction(j); });
 
-function nextAction(c) {
-  if (c.waiting && c.temp === "hot") return [1, "Reply now: confirm treatment, offer 2 slots"];
-  if (c.waiting && c.waitMin > 48 * 60) return [2, "Never answered: apologise and re-offer"];
-  if (c.waiting) return [2, "Reply within 5 min: answer, ask preferred date"];
-  if (c.temp === "hot" && c.stage === "Qualified") return [1, "Close it today: send booking link"];
-  if (c.stage === "Booked") return [3, "Reminder 24h and 2h before"];
-  if (c.stage === "Showed") return [2, "Offer package, set rebook date"];
-  if (c.returning && c.stage === "Inquiry") return [2, "Returning: rebook with usual doctor"];
-  if (c.temp === "warm") return [3, "Nurture: send results + promo"];
-  if (c.stage === "Paid") return [4, "Rebook reminder in 4 months"];
+function nextAction(j) {
+  if (j.outcome === "lost") return [4, "Lost: " + j.lostReason + ". Add to win-back list"];
+  if (j.outcome === "won") return j.returning ? [3, "Rebook in 4 months; ask for referral"] : [4, "Ask for a review and referral"];
+  if (j.waiting && j.temp === "hot") return [1, "Reply now: confirm treatment, offer 2 slots"];
+  if (j.waiting) return [2, "Reply within 5 min: answer, ask preferred date"];
+  if (j.temp === "hot" && j.reached === 2) return [1, "Close it today: send booking link"];
+  if (j.reached === 3) return [3, "Send reminder 24h and 2h before"];
+  if (j.reached === 4) return [2, "Offer package, set rebook date"];
+  if (j.temp === "warm") return [3, "Nurture: send results + promo"];
   return [4, "Add to monthly promo list"];
 }
-contacts.forEach((c) => { [c.pri, c.action] = nextAction(c); });
 
-// Daily metrics: 30 days, AI switched on at day 16
-const days = Array.from({ length: 30 }, (_, i) => {
-  const d = new Date(NOW - (29 - i) * D); const ai = i >= 15;
-  const p50 = ai ? 6 + rnd() * 10 : 120 + rnd() * 420;
-  return { date: d, ai, leads: 28 + Math.floor(rnd() * 16), p50, p90: ai ? p50 * (3 + rnd() * 3) : p50 * (2.5 + rnd() * 2), never: ai ? Math.floor(rnd() * 2) : 2 + Math.floor(rnd() * 5) };
-});
-const HOURS = [3,2,1,0,0,0,1,3,6,9,10,12,16,13,10,9,10,12,15,22,27,29,24,12];
-
-/* ---------------------------------------------------------------- helpers */
+/* ============================================================ helpers */
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const peso = (v) => "₱" + Math.round(v || 0).toLocaleString("en-PH");
-function fmtMin(m) { if (m == null) return "never"; const t = Math.round(m); if (t < 60) return t + "m";
+function fmtMin(m) { if (m == null) return "–"; const t = Math.round(m); if (t < 1) return "<1m"; if (t < 60) return t + "m";
   if (t < 1440) return Math.floor(t / 60) + "h" + (t % 60 ? " " + (t % 60) + "m" : ""); const h = Math.round(t / 60); return Math.floor(h / 24) + "d" + (h % 24 ? " " + (h % 24) + "h" : ""); }
-const ago = (ts) => fmtMin((NOW - ts) / MIN) + " ago";
+const fmtT = (ts) => new Date(ts).toLocaleString("en-PH", { timeZone: "Asia/Manila", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 const chip = (t) => `<span class="chip t-${t}">${t}</span>`;
 const tip = $("#tip");
-function showTip(e, html) { tip.innerHTML = html; tip.hidden = false; tip.style.left = Math.min(e.clientX + 14, innerWidth - 270) + "px"; tip.style.top = (e.clientY + 14) + "px"; }
+function showTip(e, html) { tip.innerHTML = html; tip.hidden = false; tip.style.left = Math.min(e.clientX + 14, innerWidth - 290) + "px"; tip.style.top = (e.clientY + 14) + "px"; }
 const hideTip = () => (tip.hidden = true);
 function toast(msg) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 2200); }
-const avg = (a) => a.reduce((x, y) => x + y, 0) / a.length;
+const stepTimes = (j) => { const out = []; let t = j.start; j.pipe.stages.forEach((s, k) => { t += j.durs[k] * MIN; out.push(t); }); return out; };
+let pipeId = "inj"; const curPipe = () => PIPELINES.find((p) => p.id === pipeId);
+const inPipe = () => journeys.filter((j) => j.pipe.id === pipeId);
+function linkBtns(j) {
+  const main = j.channel === "WhatsApp" ? "Open WhatsApp" : j.channel === "Instagram" ? "Open IG chat" : j.channel === "Messenger" ? "Open Messenger" : "Call";
+  return `<button class="btn primary sm" onclick="toast('${main}: opens this exact conversation (mock)')">${main}</button><button class="btn sm" onclick="toast('Opens patient in the clinic system (mock)')">Clinic system</button><button class="btn sm" data-trace="${j.id}">Journey</button>`;
+}
 
-/* ---------------------------------------------------------------- navigation */
+/* ============================================================ navigation */
 const TITLES = {
-  overview: ["Overview", "How fast the clinic answers, where inquiries come from, and where money leaks."],
-  queue: ["Action queue", "Who to message right now and what to say. The front desk's home screen."],
-  pipeline: ["Pipeline", "Every open journey by stage. Card colour = hot, warm or cold."],
-  contacts: ["Contacts", "The lead database: every person, their current journey, source and lifetime value."],
-  profile: ["Contact profile", "One person: journeys, trace and conversation."],
-  bottlenecks: ["Bottlenecks", "Where journeys slow down or drop out."],
-  settings: ["Sources & rules", "What feeds the dashboard, the targets, and this clinic's custom logic."],
+  queue: ["Action queue", "Who to message right now, what to say, and one tap to open the chat."],
+  overview: ["Overview", "This week at a glance, with an AI summary of what changed."],
+  journeys: ["Journeys", "Every lead from first message to payment, left to right, like a trace."],
+  pipeline: ["Pipeline", "Open journeys by stage, with conversion and time in stage. One board per service line."],
+  contacts: ["Contacts", "The lead database: every person, tags, journeys and lifetime value."],
+  log: ["Activity log", "Every message, reply, label, booking, payment and alert as a searchable stream."],
+  bottlenecks: ["Bottlenecks", "Where leads slow down or drop out, and what to try next."],
+  dashboards: ["Dashboards & reports", "Custom dashboards per clinic, exports and scheduled reports."],
+  settings: ["Pipelines & rules", "Set up pipelines, stages, targets, tags, alerts and links. Done by the clinic or by us."],
+  sources: ["Sources", "Where the data comes from."],
 };
 const navBtns = [...document.querySelectorAll("nav.side button")];
 function go(view) {
-  if (!TITLES[view]) view = "overview";
+  if (!TITLES[view]) view = "queue";
   navBtns.forEach((b) => { if (b.dataset.view === view) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
   document.querySelectorAll("section.view").forEach((s) => (s.hidden = s.id !== view));
   $("#vTitle").textContent = TITLES[view][0]; $("#vSub").textContent = TITLES[view][1];
-  try { localStorage.setItem("view", view); } catch (e) {}
+  try { localStorage.setItem("view2", view); } catch (e) {}
+  scrollTo(0, 0);
 }
 navBtns.forEach((b) => b.addEventListener("click", () => go(b.dataset.view)));
+$("#pipeSel").innerHTML = PIPELINES.map((p) => `<option value="${p.id}">Pipeline: ${p.name}</option>`).join("");
+$("#pipeSel").addEventListener("change", (e) => { pipeId = e.target.value; openRow = null; renderAll(); });
+document.addEventListener("click", (e) => { const t = e.target.closest("[data-trace]"); if (t) { const j = journeys[+t.dataset.trace]; pipeId = j.pipe.id; $("#pipeSel").value = pipeId; openRow = j.id; selSpan = j.reached; renderAll(); go("journeys"); } });
 
-/* ---------------------------------------------------------------- overview */
-function overview() {
-  const n = +$("#range").value, ds = days.slice(-n), half = Math.floor(n / 2);
-  const leads = ds.reduce((a, d) => a + d.leads, 0);
-  const after = ds.filter((d) => d.ai), before = days.filter((d) => !d.ai);
-  const booked = Math.round(leads * 0.19), revenue = booked * 0.72 * 14200;
-  const k = [
-    ["New conversations", leads.toLocaleString(), `${Math.round(avg(ds.map((d) => d.leads)))} a day`],
-    ["Median first reply", fmtMin(avg(after.map((d) => d.p50))), `<span class="up">▼ from ${fmtMin(avg(before.map((d) => d.p50)))}</span> before AI`],
-    ["Answered within 5 min", "81%", `<span class="up">▲ from 34%</span>`],
-    ["Consults booked", booked, `${Math.round((100 * booked) / leads)}% of conversations`],
-    ["Revenue tracked", peso(revenue), "from payments matched to journeys"],
-    ["Est. leak this month", peso(212000), "see breakdown below", true],
-  ];
-  $("#kpis").innerHTML = k.map(([l, v, d, leak]) => `<div class="kpi ${leak ? "leak" : ""}"><span class="l">${l}</span><span class="v">${v}</span><span class="d">${d}</span></div>`).join("");
-
-  // FRT log line
-  const W = 640, Hh = 250, m = { l: 48, r: 12, t: 12, b: 26 }, iw = W - m.l - m.r, ih = Hh - m.t - m.b;
-  const lo = Math.log(1), hi = Math.log(3000), y = (v) => m.t + ih - ((Math.log(Math.max(v, 1)) - lo) / (hi - lo)) * ih;
-  const x = (i) => m.l + (i / (ds.length - 1)) * iw;
-  let s = `<svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="First reply time per day">`;
-  [1, 10, 60, 360, 1440].forEach((t) => (s += `<line class="grid" x1="${m.l}" x2="${W - m.r}" y1="${y(t)}" y2="${y(t)}"/><text x="${m.l - 6}" y="${y(t) + 4}" text-anchor="end">${fmtMin(t)}</text>`));
-  ds.forEach((d, i) => { if (i % Math.ceil(ds.length / 6) === 0) s += `<text x="${x(i)}" y="${Hh - 6}" text-anchor="middle">${d.date.toLocaleDateString("en-PH", { month: "short", day: "numeric" })}</text>`; });
-  const aiIx = ds.findIndex((d) => d.ai);
-  if (aiIx > 0) s += `<line x1="${x(aiIx - 0.5)}" x2="${x(aiIx - 0.5)}" y1="${m.t}" y2="${m.t + ih}" stroke="var(--ink-2)" stroke-dasharray="4 4"/><text x="${x(aiIx - 0.5) + 5}" y="${m.t + 11}" style="fill:var(--ink-2)">AI on</text>`;
-  ["p90", "p50"].forEach((key) => { s += `<path d="${ds.map((d, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(d[key]).toFixed(1)}`).join("")}" fill="none" stroke="var(--${key === "p50" ? "s1" : "s2"})" stroke-width="2"/>`; });
-  const last = ds.length - 1;
-  s += `<circle cx="${x(last)}" cy="${y(ds[last].p50)}" r="4" fill="var(--s1)" stroke="var(--surface)" stroke-width="2"/><circle cx="${x(last)}" cy="${y(ds[last].p90)}" r="4" fill="var(--s2)" stroke="var(--surface)" stroke-width="2"/>`;
-  const cw = iw / (ds.length - 1);
-  ds.forEach((d, i) => (s += `<rect data-i="${i}" x="${x(i) - cw / 2}" y="${m.t}" width="${cw}" height="${ih}" fill="transparent"/>`));
-  s += `<line id="xh" y1="${m.t}" y2="${m.t + ih}" stroke="var(--ink-2)" visibility="hidden"/></svg>`;
-  const el = $("#cFrt"); el.innerHTML = s; const xh = el.querySelector("#xh");
-  el.querySelectorAll("rect[data-i]").forEach((r) => {
-    r.addEventListener("mousemove", (e) => { const i = +r.dataset.i, d = ds[i]; xh.setAttribute("x1", x(i)); xh.setAttribute("x2", x(i)); xh.setAttribute("visibility", "visible");
-      showTip(e, `<b>${d.date.toLocaleDateString("en-PH", { weekday: "short", month: "short", day: "numeric" })}</b><br>${d.leads} conversations<br>p50 ${fmtMin(d.p50)} · p90 ${fmtMin(d.p90)}<br>never answered: ${d.never}${d.ai ? "<br>AI after hours: on" : ""}`); });
-    r.addEventListener("mouseleave", () => { hideTip(); xh.setAttribute("visibility", "hidden"); });
-  });
-
-  // hours stacked bars
-  const W2 = 640, H2 = 250, m2 = { l: 34, r: 8, t: 12, b: 26 }, iw2 = W2 - m2.l - m2.r, ih2 = H2 - m2.t - m2.b, max = 30, bw = iw2 / 24;
-  const y2 = (v) => m2.t + ih2 - (v / max) * ih2;
-  let h = `<svg viewBox="0 0 ${W2} ${H2}" role="img" aria-label="Inquiries by hour">`;
-  for (let i = 0; i < 24; i++) if (i < 9 || i >= 20) h += `<rect x="${m2.l + i * bw}" y="${m2.t}" width="${bw}" height="${ih2}" fill="var(--band)"/>`;
-  [0, 10, 20, 30].forEach((v) => (h += `<line class="grid" x1="${m2.l}" x2="${W2 - m2.r}" y1="${y2(v)}" y2="${y2(v)}"/><text x="${m2.l - 6}" y="${y2(v) + 4}" text-anchor="end">${v}</text>`));
-  HOURS.forEach((v, i) => {
-    const closed = i < 9 || i >= 20, slow = Math.round(v * (closed ? 0.55 : 0.18)), okv = v - slow, bx = m2.l + i * bw + 2, w = bw - 4;
-    if (i % 3 === 0) h += `<text x="${m2.l + i * bw + bw / 2}" y="${H2 - 6}" text-anchor="middle">${String(i).padStart(2, "0")}</text>`;
-    if (!v) return;
-    h += `<rect x="${bx}" y="${y2(okv)}" width="${w}" height="${ih2 - (y2(okv) - m2.t)}" fill="var(--s1)"/>`;
-    if (slow) h += `<path d="M${bx},${y2(okv) - 2} V${y2(v) + 3} q0,-3 3,-3 h${w - 6} q3,0 3,3 V${y2(okv) - 2} Z" fill="var(--s2)"/>`;
-    h += `<rect data-h="${i}" data-v="${v}" data-s="${slow}" x="${m2.l + i * bw}" y="${m2.t}" width="${bw}" height="${ih2}" fill="transparent"/>`;
-  });
-  h += "</svg>"; $("#cHour").innerHTML = h;
-  $("#cHour").querySelectorAll("rect[data-h]").forEach((r) => { r.addEventListener("mousemove", (e) => { const i = +r.dataset.h;
-    showTip(e, `<b>${String(i).padStart(2, "0")}:00</b>${i < 9 || i >= 20 ? " (closed)" : ""}<br>${r.dataset.v} conversations a month<br>slow or never answered: ${r.dataset.s}`); }); r.addEventListener("mouseleave", hideTip); });
-
-  $("#tLeaks").innerHTML = `<thead><tr><th>Leak</th><th class="num">Leads</th><th class="num">Est. lost</th></tr></thead><tbody>
-    <tr><td>Never answered (mostly nights)</td><td class="num">23</td><td class="num">${peso(64000)}</td></tr>
-    <tr><td>Price sent, no booking ask, went quiet</td><td class="num">41</td><td class="num">${peso(58000)}</td></tr>
-    <tr><td>No-shows without a rebook</td><td class="num">9</td><td class="num">${peso(52000)}</td></tr>
-    <tr><td>Past patients due for rebook, not contacted</td><td class="num">17</td><td class="num">${peso(38000)}</td></tr></tbody>`;
-  $("#tSources").innerHTML = `<thead><tr><th>Source</th><th class="num">Conv.</th><th class="num">Booked</th><th class="num">Revenue</th><th class="num">Ad cost / patient</th></tr></thead><tbody>
-    <tr><td><span class="src">Messenger · Botox ad</span></td><td class="num">312</td><td class="num">58</td><td class="num">${peso(612000)}</td><td class="num">${peso(820)}</td></tr>
-    <tr><td><span class="src">Instagram</span></td><td class="num">188</td><td class="num">31</td><td class="num">${peso(351000)}</td><td class="num">–</td></tr>
-    <tr><td><span class="src">Messenger · Laser ad</span></td><td class="num">164</td><td class="num">12</td><td class="num">${peso(96000)}</td><td class="num">${peso(2140)}</td></tr>
-    <tr><td><span class="src">WhatsApp</span></td><td class="num">96</td><td class="num">29</td><td class="num">${peso(388000)}</td><td class="num">–</td></tr>
-    <tr><td><span class="src">Walk-in (API)</span></td><td class="num">44</td><td class="num">40</td><td class="num">${peso(472000)}</td><td class="num">–</td></tr>
-    <tr><td><span class="src">Referral</span></td><td class="num">21</td><td class="num">14</td><td class="num">${peso(205000)}</td><td class="num">–</td></tr></tbody>`;
-}
-$("#range").addEventListener("change", overview);
-
-/* ---------------------------------------------------------------- queue */
+/* ============================================================ queue */
 let qFilter = "all";
 function queue() {
-  let list = contacts.filter((c) => c.pri <= 3 && c.stage !== "Paid");
-  if (qFilter === "waiting") list = list.filter((c) => c.waiting);
-  if (qFilter === "followup") list = list.filter((c) => !c.waiting);
-  if (qFilter === "returning") list = list.filter((c) => c.returning);
+  let list = journeys.filter((j) => j.pri <= 3 && j.outcome === "open");
+  if (qFilter === "waiting") list = list.filter((j) => j.waiting);
+  if (qFilter === "followup") list = list.filter((j) => !j.waiting);
+  if (qFilter === "returning") list = list.filter((j) => j.returning);
   list.sort((a, b) => a.pri - b.pri || b.waitMin - a.waitMin);
-  $("#qBadge").textContent = contacts.filter((c) => c.pri === 1).length;
-  const more = list.length - 15; list = list.slice(0, 15);
-  $("#qList").innerHTML = list.map((c) => `<div class="qitem">
-    <span class="pri ${c.pri === 1 ? "p1" : ""}">P${c.pri}</span>
-    <div><b>${esc(c.name)}</b> ${c.returning ? '<span class="tag">↺ returning</span>' : ""}<div class="small">${esc(c.interest)} · ${peso(c.value)} · <span class="src">${esc(c.channel)}</span></div></div>
-    <div>${chip(c.temp)}<div class="wait ${c.waiting && c.waitMin > 10 ? "late" : ""}">${c.waiting ? "waiting " + fmtMin(c.waitMin) : "quiet " + ago(c.lastAct).replace(" ago", "")}</div></div>
-    <div>${esc(c.action)}<div class="small">${esc(c.stage)} · ${esc(c.source)}</div></div>
-    <div class="acts"><button class="btn primary" data-open="${c.id}">Open</button><button class="btn" data-mark="${c.id}">Mark booked</button></div></div>`).join("") + (more > 0 ? `<p style="padding:12px 14px" class="small">${more} lower-priority items hidden. Pipeline and Contacts show everyone.</p>` : "") || `<p style="padding:16px" class="small">Nothing here right now.</p>`;
+  $("#qBadge").textContent = journeys.filter((j) => j.pri === 1 && j.outcome === "open").length;
+  $("#qList").innerHTML = list.map((j) => `<div class="qitem">
+    <span class="pri ${j.pri === 1 ? "p1" : ""}">P${j.pri}</span>
+    <div><b>${esc(j.name)}</b> ${j.returning ? '<span class="tag">↺ returning</span>' : ""} ${j.tags.map((t) => `<span class="lbl">${t}</span>`).join(" ")}<div class="small">${esc(j.interest)} · ${peso(j.value)} · ${esc(j.pipe.name)}</div></div>
+    <div>${chip(j.temp)}<div class="wait ${j.waiting && j.waitMin > 10 ? "late" : ""}">${j.waiting ? "waiting " + fmtMin(j.waitMin) : "at " + esc(j.stageName)}</div></div>
+    <div>${esc(j.action)}<div class="small">via ${esc(j.channel)} · ${esc(j.source)}</div></div>
+    <div class="acts">${linkBtns(j)}</div></div>`).join("") || `<p class="small" style="padding:16px">Nothing here right now.</p>`;
 }
 document.querySelectorAll("[data-q]").forEach((b) => b.addEventListener("click", () => { qFilter = b.dataset.q; document.querySelectorAll("[data-q]").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); queue(); }));
-document.addEventListener("click", (e) => {
-  const o = e.target.closest("[data-open]"); if (o) { openProfile(+o.dataset.open); return; }
-  const mk = e.target.closest("[data-mark]"); if (mk) { const c = contacts[+mk.dataset.mark]; c.stage = "Booked"; c.stageIx = 3; c.waiting = false; c.temp = "hot"; [c.pri, c.action] = nextAction(c); toast(`${c.name} marked booked (mock)`); queue(); pipeline(); contactsTable(); }
-});
 
-/* ---------------------------------------------------------------- pipeline */
+/* ============================================================ overview */
+function overview() {
+  const p = curPipe(), js = inPipe();
+  $("#aiWeek").innerHTML = `<div class="who">AI summary · week of Sep 28 – Oct 4 · ${esc(p.name)}</div>
+    <p>Inquiries were up 12% and the median first reply stayed under 15 minutes after the after-hours AI was switched on. Bookings rose from 31 to 38. The biggest drop is still after the price is sent: 6 of 10 filler leads stopped there, and most were never asked for a date.</p>
+    <ul><li>Try: always end a price reply with two time slots.</li><li>3 hot leads have waited over an hour today. They're at the top of the action queue.</li><li>Laser package leads from the Laser ad cost ₱2,140 per booked patient, almost three times the Botox ad.</li></ul>
+    <span class="ev">Based on 412 conversations and 38 bookings. Click any number below to see the leads behind it.</span>`;
+  const won = js.filter((j) => j.outcome === "won").length;
+  const k = [["New journeys", js.length * 9, "this month"], ["Median first reply", "11m", '<span class="up">▼ from 6h 11m</span>'], ["Answered within 5 min", "81%", '<span class="up">▲ from 34%</span>'],
+    ["Booked", Math.round(js.length * 9 * 0.21), "21% of journeys"], ["Revenue tracked", peso(won * 9 * 15800), "payments matched to journeys"], ["Est. leak this month", peso(212000), "see Bottlenecks", true]];
+  $("#kpis").innerHTML = k.map(([l, v, d, leak]) => `<div class="kpi ${leak ? "leak" : ""}"><span class="l">${l}</span><span class="v">${v}</span><span class="d">${d}</span></div>`).join("");
+  // FRT chart
+  seed = 99; const days = Array.from({ length: 30 }, (_, i) => { const ai = i >= 15, p50 = ai ? 6 + rnd() * 10 : 120 + rnd() * 420; return { date: new Date(NOW - (29 - i) * D), ai, p50, p90: p50 * (ai ? 3 + rnd() * 3 : 2.5 + rnd() * 2) }; });
+  const W = 640, Hh = 240, m = { l: 48, r: 12, t: 12, b: 26 }, iw = W - m.l - m.r, ih = Hh - m.t - m.b, lo = 0, hi = Math.log(3000);
+  const y = (v) => m.t + ih - ((Math.log(Math.max(v, 1)) - lo) / (hi - lo)) * ih, x = (i) => m.l + (i / 29) * iw;
+  let s = `<svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="First reply time per day">`;
+  [1, 10, 60, 360, 1440].forEach((t) => (s += `<line class="grid" x1="${m.l}" x2="${W - m.r}" y1="${y(t)}" y2="${y(t)}"/><text x="${m.l - 6}" y="${y(t) + 4}" text-anchor="end">${fmtMin(t)}</text>`));
+  days.forEach((d, i) => { if (i % 5 === 0) s += `<text x="${x(i)}" y="${Hh - 6}" text-anchor="middle">${d.date.toLocaleDateString("en-PH", { month: "short", day: "numeric" })}</text>`; });
+  s += `<line x1="${x(14.5)}" x2="${x(14.5)}" y1="${m.t}" y2="${m.t + ih}" stroke="var(--ink-2)" stroke-dasharray="4 4"/><text x="${x(14.5) + 5}" y="${m.t + 11}" style="fill:var(--ink-2)">AI on</text>`;
+  ["p90", "p50"].forEach((k2) => (s += `<path d="${days.map((d, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(d[k2]).toFixed(1)}`).join("")}" fill="none" stroke="var(--${k2 === "p50" ? "s1" : "s2"})" stroke-width="2"/>`));
+  s += `<circle cx="${x(29)}" cy="${y(days[29].p50)}" r="4" fill="var(--s1)" stroke="var(--surface)" stroke-width="2"/><circle cx="${x(29)}" cy="${y(days[29].p90)}" r="4" fill="var(--s2)" stroke="var(--surface)" stroke-width="2"/>`;
+  days.forEach((d, i) => (s += `<rect data-i="${i}" x="${x(i) - iw / 58}" y="${m.t}" width="${iw / 29}" height="${ih}" fill="transparent"/>`));
+  s += "</svg>"; $("#cFrt").innerHTML = s;
+  $("#cFrt").querySelectorAll("rect[data-i]").forEach((r) => { r.addEventListener("mousemove", (e) => { const d = days[+r.dataset.i];
+    showTip(e, `<b>${d.date.toLocaleDateString("en-PH", { weekday: "short", month: "short", day: "numeric" })}</b><br>p50 ${fmtMin(d.p50)} · p90 ${fmtMin(d.p90)}${d.ai ? "<br>AI after hours: on" : ""}`); }); r.addEventListener("mouseleave", hideTip); });
+  // mini funnel
+  const counts = p.stages.map((_, k) => js.filter((j) => j.outcome === "open" && j.reached === k).length);
+  const conv = p.stages.map((_, k) => k === 0 ? null : Math.round(100 * js.filter((j) => j.reached >= k).length / Math.max(1, js.filter((j) => j.reached >= k - 1).length)));
+  const max = Math.max(...counts, 1);
+  $("#miniFunnel").innerHTML = p.stages.map((st, k) => `<div style="display:grid;grid-template-columns:130px 1fr 110px;gap:10px;align-items:center;margin:6px 0">
+    <span>${st[0]}</span><div style="height:20px;border-radius:0 4px 4px 0;background:var(--s1);width:${Math.max(2, (100 * counts[k]) / max)}%"></div>
+    <span class="mono small">${counts[k]} open${conv[k] != null ? ` · ${conv[k]}% in` : ""}</span></div>`).join("");
+}
+
+/* ============================================================ journeys (trace view) */
+let jStatus = "all", openRow = 0, selSpan = 1;
+function stepState(j, k) {
+  if (k <= j.reached) { const target = j.pipe.stages[k][2]; return k > 0 && target && j.durs[k] > target * 1.5 ? "slow" : "done"; }
+  if (j.outcome === "lost" && k === j.lostAt) return "lost";
+  if (j.outcome === "open" && k === j.reached + 1) return "now";
+  return "none";
+}
+function journeysView() {
+  const p = curPipe();
+  $("#jStop").innerHTML = `<option value="">Stopped at any stage</option>` + p.stages.slice(1).map((s, k) => `<option value="${k + 1}">Stopped at: ${s[0]}</option>`).join("");
+  $("#jStop").value = jStopVal;
+  let list = inPipe();
+  if (jStatus !== "all") list = list.filter((j) => j.outcome === jStatus);
+  if (jStopVal) list = list.filter((j) => j.outcome === "lost" && j.lostAt === +jStopVal);
+  list.sort((a, b) => (a.id === openRow ? -1 : b.id === openRow ? 1 : b.start - a.start));
+  let html = `<div class="jhead">Lead</div>` + p.stages.map((s) => `<div class="jhead">${s[0]}</div>`).join("");
+  list.forEach((j) => {
+    html += `<div class="jrow ${j.id === openRow ? "open" : ""}" data-row="${j.id}" tabindex="0">
+      <div class="jcell"><div class="who"><b>${esc(j.name)}</b><span class="small">${esc(j.interest)} · ${j.outcome === "lost" ? "lost" : j.outcome === "won" ? "won " + peso(j.value) : "open"}</span></div></div>`;
+    p.stages.forEach((s, k) => { const st = stepState(j, k);
+      const label = st === "done" || st === "slow" ? (k === 0 ? "✓" : fmtMin(j.durs[k])) : st === "now" ? (j.waiting ? "waiting " + fmtMin(j.waitMin) : "now") : st === "lost" ? "✕ stopped" : "";
+      html += `<div class="jcell"><div class="step ${st}" title="${esc(s[0])}">${label}</div></div>`; });
+    html += `</div>`;
+    if (j.id === openRow) html += detailHtml(j);
+  });
+  $("#jGrid").innerHTML = html;
+  $("#jGrid").querySelectorAll("[data-row]").forEach((r) => r.addEventListener("click", () => { const id = +r.dataset.row; openRow = openRow === id ? null : id; selSpan = journeys[id].reached; journeysView(); }));
+  $("#jGrid").querySelectorAll("[data-span]").forEach((b) => b.addEventListener("click", (e) => { e.stopPropagation(); selSpan = +b.dataset.span; journeysView(); }));
+}
+function detailHtml(j) {
+  const p = j.pipe, times = stepTimes(j), last = j.outcome === "open" && j.waiting ? NOW : times[Math.min(j.reached, 5)];
+  const t0 = j.start, span = Math.max(last - t0, MIN);
+  const bars = p.stages.map((s, k) => {
+    if (k > j.reached) { if (j.outcome === "lost" && k === j.lostAt) return `<div class="wbar late" data-span="${k}"><span>✕ ${esc(s[0])}</span><div class="track"></div><span class="d">stopped</span></div>`; return ""; }
+    const startT = k === 0 ? t0 : times[k - 1], endT = times[k], left = ((startT - t0) / span) * 100, w = Math.max(((endT - startT) / span) * 100, 0.8);
+    const target = s[2], late = k > 0 && target && j.durs[k] > target * 1.5, col = k === 0 ? "var(--s1)" : late ? "var(--hot)" : "var(--done)";
+    return `<div class="wbar ${late ? "late" : ""} ${selSpan === k ? "sel" : ""}" data-span="${k}"><span>${esc(s[0])}</span><div class="track"><i style="left:${left}%;width:${Math.min(w, 100 - left)}%;background:${col}"></i></div><span class="d">${k === 0 ? "start" : fmtMin(j.durs[k])}</span></div>`;
+  }).join("");
+  const nowBar = j.outcome === "open" ? `<div class="wbar"><span style="color:var(--s1)">→ ${esc(p.stages[j.reached + 1]?.[0] || "")}</span><div class="track"><i style="left:${((times[j.reached] - t0) / span) * 100}%;width:${Math.max(((NOW - times[j.reached]) / span) * 100, 1)}%;background:repeating-linear-gradient(90deg,var(--s1) 0 6px,transparent 6px 10px)"></i></div><span class="d" style="color:var(--s1)">in progress</span></div>` : "";
+  const k = Math.min(selSpan, 5), s = p.stages[k];
+  const sum = j.id === 1
+    ? "Bea asked about lip filler on Instagram, got the price after 14 minutes, and asked about promos and Saturday slots. Staff replied with a second price but no time slots. She hasn't answered in 4 days. Likely price-sensitive and wants a weekend."
+    : j.id === 0 ? "Ana messaged at night from the Botox ad, waited almost 12 hours for a first reply, then booked within 30 minutes once staff answered. Returning VIP patient; prefers afternoons."
+    : `${j.name.split(" ")[0]} asked about ${j.interest.toLowerCase()} via ${j.channel}. ${j.outcome === "lost" ? "Stopped at " + p.stages[j.lostAt][0].toLowerCase() + ": " + j.lostReason.toLowerCase() + "." : j.outcome === "won" ? "Completed the journey and paid " + peso(j.value) + "." : "Currently at " + j.stageName.toLowerCase() + "."}`;
+  const fix = j.outcome === "lost" ? (j.lostAt <= 1 ? "Reply faster at night: the AI responder would have answered in about a minute." : j.lostAt === 2 || j.lostAt === 3 ? "Send two time slots with every price, and follow up after 24h with the weekend promo." : "Send reminders 24h and 2h before; offer an easy rebook link after a no-show.") : j.action;
+  const info = k > j.reached
+    ? `<div class="kv"><span>Stage</span><b>${esc(s[0])}</b><span>Status</span><span style="color:var(--hot)">Stopped here: ${esc(j.lostReason)}</span><span>Last activity</span><span>${fmtT(times[j.reached])}</span></div>`
+    : `<div class="kv"><span>Stage</span><b>${esc(s[0])}</b><span>Entered</span><span>${fmtT(times[k])}</span><span>Took</span><span>${k ? fmtMin(j.durs[k]) : "–"} ${k && s[2] ? `(target ${fmtMin(s[2])})` : ""}</span><span>Counted when</span><span>${esc(s[1])}</span>
+       <span>By</span><span>${k === 0 ? "Patient via " + esc(j.channel) : k === 1 ? (j.night && j.id !== 0 && j.durs[1] < 5 ? "AI" : "Staff (Business Suite)") : k === 2 ? "Classifier (signals: asks_availability)" : k >= 3 ? "Booking tool / front desk / payment" : ""}</span>
+       <span>Source</span><span>${esc(j.source)}</span></div>`;
+  return `<div class="detail">
+    <div class="ai"><div class="who">AI summary of this lead</div><p>${esc(sum)}</p><span class="ev"><b>Suggested next step:</b> ${esc(fix)}</span></div>
+    <div class="g2">
+      <div><div class="axis"><span></span><div><span>${fmtT(t0)}</span><span>${fmtT(last)}</span></div><span></span></div><div class="wfall">${bars}${nowBar}</div>
+        <p class="small" style="margin-top:6px">Total: ${fmtMin((last - t0) / MIN)}. Click a step to see its details.</p></div>
+      <div class="spaninfo">${info}<div class="acts" style="justify-content:flex-start">${linkBtns(j).replace(/<button class="btn sm" data-trace[^]*$/, "")}<button class="btn sm" onclick="toast('Opens the full conversation for this step (mock)')">Messages in this step</button></div></div>
+    </div></div>`;
+}
+let jStopVal = "";
+document.querySelectorAll("[data-js]").forEach((b) => b.addEventListener("click", () => { jStatus = b.dataset.js; document.querySelectorAll("[data-js]").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); journeysView(); }));
+$("#jStop").addEventListener("change", (e) => { jStopVal = e.target.value; journeysView(); });
+
+/* ============================================================ pipeline */
 function pipeline() {
-  $("#kanban").innerHTML = STAGES.map((st) => { const cs = contacts.filter((c) => c.stage === st);
-    return `<div class="kcol"><h3>${st}<span class="mono">${cs.length}</span></h3><div class="sum">${peso(cs.reduce((a, c) => a + c.value, 0))} potential</div>
-    ${cs.map((c) => `<div class="kcard ${c.temp}" data-open="${c.id}" tabindex="0"><b>${esc(c.name)}</b><span class="small">${esc(c.interest)} · ${peso(c.value)}</span><span class="small">${c.returning ? "↺ returning · " : ""}${c.waiting ? "waiting " + fmtMin(c.waitMin) : ago(c.lastAct)}</span></div>`).join("")}</div>`; }).join("");
+  const p = curPipe(), js = inPipe();
+  const cols = p.stages.map((s, k) => {
+    const cs = js.filter((j) => j.outcome === "open" && j.reached === k);
+    const conv = k === 0 ? null : Math.round(100 * js.filter((j) => j.reached >= k).length / Math.max(1, js.filter((j) => j.reached >= k - 1).length));
+    const med = k ? fmtMin([...js.filter((j) => j.reached >= k).map((j) => j.durs[k])].sort((a, b) => a - b)[Math.floor(js.filter((j) => j.reached >= k).length / 2)] || 0) : "–";
+    return `<div class="kcol"><h3>${s[0]}<span class="mono">${cs.length}</span></h3>
+      <div class="kstats"><span><b>${peso(cs.reduce((a, j) => a + j.value, 0))}</b> potential</span><span>median <b>${med}</b> to reach</span>${conv != null ? `<span class="kconv">${conv}% from previous</span>` : "<span>&nbsp;</span>"}</div>
+      ${cs.map((j) => { const late = j.waiting && j.waitMin > 10; return `<div class="kcard ${j.temp}" data-trace="${j.id}" tabindex="0"><b>${esc(j.name)}</b><span class="small">${esc(j.interest)} · ${peso(j.value)}</span>
+        ${late ? `<span class="late">waiting ${fmtMin(j.waitMin)}</span>` : `<span class="small">${j.returning ? "↺ returning · " : ""}${esc(j.channel)}</span>`}</div>`; }).join("") || '<span class="small">None</span>'}</div>`;
+  }).join("");
+  const lost = js.filter((j) => j.outcome === "lost");
+  $("#kanban").innerHTML = cols + `<div class="kcol lost"><h3>Lost<span class="mono">${lost.length}</span></h3><div class="kstats"><span><b>${peso(lost.reduce((a, j) => a + j.value, 0))}</b> lost value</span><span>last 30 days</span><span>&nbsp;</span></div>
+    ${lost.slice(0, 8).map((j) => `<div class="kcard" data-trace="${j.id}" tabindex="0"><b>${esc(j.name)}</b><span class="small">at ${esc(p.stages[j.lostAt][0])}</span><span class="small" style="color:var(--hot)">${esc(j.lostReason)}</span></div>`).join("")}</div>`;
 }
 
-/* ---------------------------------------------------------------- contacts */
-$("#cStage").insertAdjacentHTML("beforeend", STAGES.map((s) => `<option>${s}</option>`).join(""));
-$("#cSrc").insertAdjacentHTML("beforeend", SOURCES.map((s) => `<option>${s}</option>`).join(""));
+/* ============================================================ contacts */
 function contactsTable() {
-  const q = $("#cSearch").value.toLowerCase(), t = $("#cTemp").value, st = $("#cStage").value, sr = $("#cSrc").value, ret = $("#cRet").checked;
-  const rows = contacts.filter((c) => (!q || (c.name + c.interest).toLowerCase().includes(q)) && (!t || c.temp === t) && (!st || c.stage === st) && (!sr || c.source === sr) && (!ret || c.returning));
-  $("#tContacts").innerHTML = `<thead><tr><th>Name</th><th>Label</th><th>Stage</th><th>Interest</th><th>Source</th><th class="num">Journeys</th><th class="num">Lifetime</th><th>Last activity</th></tr></thead><tbody>` +
-    rows.map((c) => `<tr class="click" data-open="${c.id}"><td><b>${esc(c.name)}</b> ${c.returning ? '<span class="tag">↺</span>' : ""}</td><td>${chip(c.temp)}</td><td>${c.stage}</td><td>${esc(c.interest)}</td>
-      <td><span class="src">${esc(c.source)}</span></td><td class="num">${c.pastJ + 1}</td><td class="num">${c.ltv ? peso(c.ltv) : "–"}</td><td class="small">${ago(c.lastAct)}</td></tr>`).join("") + "</tbody>";
+  const q = $("#cSearch").value.toLowerCase(), t = $("#cTemp").value, tg = $("#cTag").value, ret = $("#cRet").checked;
+  const rows = journeys.filter((j) => (!q || (j.name + j.interest).toLowerCase().includes(q)) && (!t || j.temp === t) && (!tg || j.tags.includes(tg)) && (!ret || j.returning));
+  $("#tContacts").innerHTML = `<thead><tr><th>Name</th><th>Label</th><th>Tags</th><th>Pipeline · stage</th><th>Source</th><th class="num">Journeys</th><th class="num">Lifetime</th><th></th></tr></thead><tbody>` +
+    rows.map((j) => `<tr class="click" data-trace="${j.id}"><td><b>${esc(j.name)}</b> ${j.returning ? '<span class="tag">↺</span>' : ""}<div class="small">${esc(j.phone)}</div></td><td>${chip(j.temp)}</td>
+      <td>${j.tags.map((x) => `<span class="lbl">${x}</span>`).join(" ") || '<span class="small">–</span>'}</td><td>${esc(j.pipe.name)}<div class="small">${j.outcome === "lost" ? "lost at " + esc(j.pipe.stages[j.lostAt][0]) : esc(j.stageName)}</div></td>
+      <td><span class="src">${esc(j.source)}</span></td><td class="num">${j.returning ? 2 : 1}</td><td class="num">${j.outcome === "won" || j.returning ? peso(j.value * (j.returning ? 2 : 1)) : "–"}</td><td class="small">open journey →</td></tr>`).join("") + "</tbody>";
 }
-["#cSearch", "#cTemp", "#cStage", "#cSrc", "#cRet"].forEach((s) => $(s).addEventListener("input", contactsTable));
+["#cSearch", "#cTemp", "#cTag", "#cRet"].forEach((s) => $(s).addEventListener("input", contactsTable));
 
-/* ---------------------------------------------------------------- profile + trace */
-const SCRIPTS = {
-  Botox: ["Hi! Magkano po botox?", "Available po ba bukas ng hapon? Pa-book sana", "4pm po. Saan po kayo?"],
-  Filler: ["hm po lip filler", "Ilang ml po usually? May promo?", "Pwede po Saturday?"],
-  Laser: ["Hello, how much po laser for melasma?", "Ilang sessions po?", "Sige po, book ko na Sat"],
-  "Skin booster": ["May promo po kayo sa skin booster?", "Budget ko 15k, pwede gcash?", "This Saturday po pwede?"],
-  Facial: ["magkano po facial", "May slot po today?", "Sige po 5pm"],
-  Slimming: ["Magkano po slimming sa tummy?", "May available po weekend?", "Book ko na po"],
-};
-const REPLIES = ["Hi po! Thanks for messaging Glow. Starts at {v}. May I know your preferred date?", "We have 2pm or 4pm po. Which one?", "Booked po! We're at 2F Glow Bldg, Kapitolyo. See you!"];
-function buildJourney(c, j) {
-  const past = j < c.pastJ, night = !past && c.id % 3 === 0;
-  const localMidnight = Math.floor((c.lastAct + 8 * H) / D) * D - 8 * H;
-  const start = past ? NOW - (c.pastJ - j) * 140 * D - 5 * H : night ? localMidnight - D + 21 * H + 14 * MIN : c.lastAct - 26 * H;
-  const steps = [];
-  let t = start; const add = (kind, label, dur, text) => { steps.push({ kind, label, at: t, dur, text }); t += dur; };
-  const script = SCRIPTS[c.interest];
-  add("patient", "Inquiry", 40 * 1000, script[0]);
-  const stIx = past ? 5 : c.stageIx;
-  if (stIx >= 1 || c.waiting) {
-    const d1 = night ? 11 * H + 58 * MIN : (3 + (c.id % 25)) * MIN;
-    if (night) add("system", "Alert: hot lead waiting", 0, "front desk notified at 09:10");
-    add(!night && !past && c.id % 4 === 1 ? "ai" : "staff", "First reply", d1, REPLIES[0].replace("{v}", peso(c.value)));
-    add("patient", "Patient answers", 9 * MIN, script[1]);
-  }
-  if (stIx >= 2) { add("system", "Qualified (label: hot)", 0, "signals: asks_availability, asks_to_book"); add("staff", "Offer slots", (4 + (c.id % 9)) * MIN, REPLIES[1]); add("patient", "Picks a slot", 6 * MIN, script[2]); }
-  if (stIx >= 3) add("system", "Consult booked", 2 * MIN, "booking tool webhook · Sat 4:00pm");
-  if (stIx >= 4) add("system", "Showed up", 2 * D + 3 * H, "front desk · arrived 3:52pm");
-  if (stIx >= 5) add("system", "Payment received", 70 * MIN, `PayMongo · ${peso(c.value)}`);
-  if (!past && c.waiting) steps.push({ kind: "patient", label: "Waiting for reply", at: NOW - c.waitMin * MIN, dur: c.waitMin * MIN, text: "Hello po? Pwede pa po ba yung slot?", waiting: true });
-  return { steps, outcome: past || stIx >= 5 ? "won" : "open", started: start };
+/* ============================================================ activity log */
+let lType = "";
+const LOGS = (() => { const out = [];
+  journeys.forEach((j) => { const times = stepTimes(j);
+    out.push({ t: j.start, j, k: "msg", ev: "Message in", d: `"${j.interest === "Botox" ? "Hi! Magkano po botox?" : "Hello po, how much " + j.interest.toLowerCase() + "?"}"`, src: j.channel });
+    if (j.temp === "hot" && j.reached >= 2) out.push({ t: times[2], j, k: "sys", ev: "Label → hot", d: "score 80 · asks_availability, asks_to_book", src: "classifier" });
+    if (j.reached >= 1) out.push({ t: times[1], j, k: j.night && j.durs[1] < 5 ? "ai" : "reply", ev: j.night && j.durs[1] < 5 ? "AI reply" : "Staff reply", d: `first reply after ${fmtMin(j.durs[1])}`, src: j.channel });
+    if (j.night && j.durs[1] > 60) out.push({ t: j.start + 10 * H + 50 * MIN, j, k: "alert", ev: "Alert sent", d: "hot lead waiting 10 min → front desk", src: "Telegram" });
+    if (j.reached >= 3) out.push({ t: times[3], j, k: "biz", ev: j.pipe.stages[3][0], d: "Sat 4:00pm with Dr. Cruz", src: "Cal.com" });
+    if (j.reached >= 5) out.push({ t: times[5], j, k: "biz", ev: "Payment", d: peso(j.value), src: "PayMongo" });
+    if (j.outcome === "lost") out.push({ t: times[j.reached] + 2 * D, j, k: "sys", ev: "Marked lost", d: j.lostReason, src: "AI summary" });
+  });
+  return out.filter((x) => x.t <= NOW).sort((a, b) => b.t - a.t); })();
+function logView() {
+  const q = $("#lSearch").value.toLowerCase();
+  const rows = LOGS.filter((x) => (!lType || x.k === lType || (lType === "msg" && ["msg", "reply", "ai"].includes(x.k))) && (!q || (x.j.name + x.ev + x.d).toLowerCase().includes(q))).slice(0, 60);
+  $("#logList").innerHTML = rows.map((x) => `<div class="logrow click" data-trace="${x.j.id}" style="cursor:pointer"><span class="t">${fmtT(x.t)}</span><b>${esc(x.j.name)}</b><span class="ek ${x.k}">${esc(x.ev)}</span><span>${esc(x.d)}</span><span class="src">${esc(x.src)}</span></div>`).join("");
 }
-let current = 0, curJ = 0;
-function openProfile(id) { current = id; curJ = contacts[id].pastJ; go("profile"); profile(); }
-function profile() {
-  const c = contacts[current], j = buildJourney(c, curJ);
-  $("#pHead").innerHTML = `<div class="avatar">${c.name.split(" ").map((p) => p[0]).join("").slice(0, 2)}</div>
-    <div style="display:grid;gap:4px;min-width:0"><h2>${esc(c.name)} ${c.returning ? '<span class="tag">↺ returning patient</span>' : ""}</h2>
-    <div class="facts"><span>${chip(c.temp)}</span><span>Stage: <b>${c.stage}</b></span><span>Interest: ${esc(c.interest)}</span><span>Channels: <span class="src">${esc(c.channel)}</span>${c.returning ? ' <span class="src">WhatsApp</span>' : ""}</span>
-    <span>Lifetime: <b>${c.ltv ? peso(c.ltv) : "–"}</b></span><span>First source: <span class="src">${esc(c.source)}</span></span></div>
-    <div class="small">Next action: <b style="color:var(--ink)">${esc(c.action)}</b></div></div>
-    <div class="acts" style="margin-left:auto"><button class="btn primary" data-mark="${c.id}">Mark booked</button><button class="btn" onclick="toast('Opens the chat in Meta Business Suite (mock)')">Open chat</button></div>`;
-  $("#jTabs").innerHTML = Array.from({ length: c.pastJ + 1 }, (_, i) => { const jj = buildJourney(c, i);
-    return `<button aria-pressed="${i === curJ}" data-j="${i}">Journey ${i + 1} · ${new Date(jj.started).toLocaleDateString("en-PH", { month: "short", year: "numeric" })} · ${jj.outcome}</button>`; }).join("");
-  $("#jTabs").querySelectorAll("button").forEach((b) => b.addEventListener("click", () => { curJ = +b.dataset.j; profile(); }));
+document.querySelectorAll("[data-lt]").forEach((b) => b.addEventListener("click", () => { lType = b.dataset.lt; document.querySelectorAll("[data-lt]").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); logView(); }));
+$("#lSearch").addEventListener("input", logView);
 
-  const steps = j.steps, t0 = steps[0].at, tEnd = Math.max(...steps.map((s) => s.at + s.dur)), span = Math.max(tEnd - t0, 1);
-  const col = { patient: "var(--s1)", staff: "var(--accent)", ai: "var(--s2)", system: "var(--muted)" };
-  $("#wf").innerHTML = steps.map((s) => { const slow = (s.label === "First reply" || s.waiting) && s.dur > 5 * MIN;
-    const left = ((s.at - t0) / span) * 100, w = Math.max((s.dur / span) * 100, 0.6);
-    return `<div class="wrow ${slow ? "slow" : ""}"><div class="lbl"><i class="dot" style="background:${col[s.kind]}"></i><span title="${esc(s.label)}">${esc(s.label)}</span></div>
-      <div class="track"><i style="left:${left}%;width:${Math.min(w, 100 - left)}%;background:${slow ? "var(--hot)" : col[s.kind]}"></i></div>
-      <span class="dur">${s.dur ? fmtMin(s.dur / MIN) : "·"}</span></div>`; }).join("") +
-    `<p class="small" style="margin-top:8px">Total so far: <b>${fmtMin(span / MIN)}</b> · ${j.outcome === "won" ? "won" : "open"}</p>`;
-
-  $("#chat").innerHTML = steps.map((s) => { const time = new Date(s.at + (s.kind === "patient" ? 0 : s.dur)).toLocaleString("en-PH", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
-    if (s.kind === "system") return `<div class="ev">${esc(s.label)} · ${esc(s.text)}</div>`;
-    if (s.kind === "patient") return `<div class="bubble in">${esc(s.text)}<span class="meta">${time} · ${esc(c.channel)}${s.waiting ? " · waiting" : ""}</span></div>`;
-    return `<div class="bubble out">${esc(s.text)}<span class="meta">${time} · ${s.kind === "ai" ? "AI" : "Staff (Business Suite)"}</span></div>`; }).join("");
-}
-
-/* ---------------------------------------------------------------- bottlenecks */
+/* ============================================================ bottlenecks */
 function bottlenecks() {
-  const counts = [612, 563, 241, 132, 98, 81], steps = [[0.2, 9.5], [0.6, 30], [5, 52], [40, 96], [0.8, 3]];
-  let worst = 1, worstR = 1; counts.forEach((n, i) => { if (i && n / counts[i - 1] < worstR) { worstR = n / counts[i - 1]; worst = i; } });
-  $("#funnel").innerHTML = STAGES.map((s, i) => `${i ? `<div class="fstep">↳ step took ${fmtMin(steps[i - 1][0] * 60)} median · ${fmtMin(steps[i - 1][1] * 60)} p90</div>` : ""}
-    <div class="frow ${i === worst ? "worst" : ""}"><span>${s}</span><div class="bar" style="width:${(100 * counts[i]) / counts[0]}%"></div>
-    <span class="stat"><b>${counts[i]}</b>${i ? ` · <b>${Math.round((100 * counts[i]) / counts[i - 1])}%</b> kept` : ""}${i === worst ? " · biggest drop" : ""}</span></div>`).join("");
-
-  const W = 560, Hh = 230, m = { l: 150, r: 40, t: 8, b: 24 }, iw = W - m.l - m.r, rowH = (Hh - m.t - m.b) / 5, max = 100;
-  const x = (v) => m.l + (v / max) * iw;
-  let s = `<svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="Hours per step">`;
-  [0, 25, 50, 75, 100].forEach((v) => (s += `<line class="grid" x1="${x(v)}" x2="${x(v)}" y1="${m.t}" y2="${Hh - m.b}"/><text x="${x(v)}" y="${Hh - 6}" text-anchor="middle">${v}h</text>`));
-  steps.forEach(([p50, p90], i) => { const yy = m.t + i * rowH + 6;
-    s += `<text x="${m.l - 8}" y="${yy + 12}" text-anchor="end" style="fill:var(--ink-2)">${STAGES[i]} → ${STAGES[i + 1]}</text>`;
-    s += `<rect x="${m.l}" y="${yy}" width="${Math.max(x(p90) - m.l, 2)}" height="8" rx="3" fill="var(--s2)"/>`;
-    s += `<rect x="${m.l}" y="${yy + 10}" width="${Math.max(x(p50) - m.l, 2)}" height="8" rx="3" fill="var(--s1)"/>`;
-    s += `<rect data-i="${i}" x="${m.l}" y="${yy - 2}" width="${iw}" height="${rowH - 2}" fill="transparent"/>`; });
-  s += "</svg>"; $("#cSteps").innerHTML = s;
-  $("#cSteps").querySelectorAll("rect[data-i]").forEach((r) => { r.addEventListener("mousemove", (e) => { const [a, b] = steps[+r.dataset.i];
-    showTip(e, `<b>${STAGES[+r.dataset.i]} → ${STAGES[+r.dataset.i + 1]}</b><br>median ${fmtMin(a * 60)}<br>p90 ${fmtMin(b * 60)}`); }); r.addEventListener("mouseleave", hideTip); });
-
-  const stuck = contacts.filter((c) => c.stage !== "Paid").map((c) => ({ c, days: Math.round((NOW - c.lastAct) / D + (c.id % 5)) })).sort((a, b) => b.days - a.days).slice(0, 8);
-  $("#tStuck").innerHTML = `<thead><tr><th>Name</th><th>Stuck in</th><th class="num">Days</th><th>Label</th><th>Next action</th></tr></thead><tbody>` +
-    stuck.map(({ c, days }) => `<tr class="click" data-open="${c.id}"><td><b>${esc(c.name)}</b></td><td>${c.stage}</td><td class="num">${days}</td><td>${chip(c.temp)}</td><td>${esc(c.action)}</td></tr>`).join("") + "</tbody>";
+  const p = curPipe(), js = inPipe();
+  $("#aiDiag").innerHTML = `<div class="who">AI diagnosis · ${esc(p.name)} · last 30 days</div>
+    <p>Most leads are lost between <b>${esc(p.stages[1][0])}</b> and <b>${esc(p.stages[3][0])}</b>. In 7 of 10 lost conversations the clinic sent a price but no date or booking link, and the patient stopped replying within a day.</p>
+    <ul><li><b>Change the price reply:</b> add two time slots and a booking link. Expected: +4 to 6 bookings a month.</li><li><b>Night gap:</b> 23 inquiries after 8pm waited until morning, and 9 of them never replied again.</li><li><b>No-shows:</b> 9 this month; reminders 2h before cut no-shows by about a third at similar clinics.</li></ul>
+    <span class="ev">Each point links to the journeys behind it. The AI explains patterns; the numbers come from the database.</span>`;
+  const n = p.stages.map((_, k) => js.filter((j) => j.reached >= k).length);
+  let worst = 1, wr = 1; n.forEach((v, k) => { if (k && v / Math.max(n[k - 1], 1) < wr) { wr = v / Math.max(n[k - 1], 1); worst = k; } });
+  $("#funnel").innerHTML = p.stages.map((s, k) => { const keep = k ? Math.round((100 * n[k]) / Math.max(n[k - 1], 1)) : 100; const reach = js.filter((j) => j.reached >= k).map((j) => j.durs[k]).sort((a, b) => a - b);
+    return `${k ? `<div class="small" style="padding-left:140px;font-family:var(--f-mono)">↳ median ${fmtMin(reach[Math.floor(reach.length / 2)])}</div>` : ""}
+    <div style="display:grid;grid-template-columns:130px 1fr 150px;gap:10px;align-items:center;margin:4px 0"><span>${s[0]}</span><div style="height:22px;border-radius:0 4px 4px 0;background:var(--s1);width:${(100 * n[k]) / Math.max(n[0], 1)}%"></div>
+    <span class="mono small"><b style="color:var(--ink)">${n[k]}</b>${k ? ` · <b style="color:${k === worst ? "var(--hot)" : "var(--ink-2)"}">${keep}%</b> kept` : ""}${k === worst ? " · biggest drop" : ""}</span></div>`; }).join("");
+  const reasons = {}; js.filter((j) => j.outcome === "lost").forEach((j) => (reasons[j.lostReason] = (reasons[j.lostReason] || 0) + 1));
+  const rs = Object.entries(reasons).sort((a, b) => b[1] - a[1]), max = Math.max(...rs.map((r) => r[1]), 1);
+  const W = 520, rowH = 30, Hh = rs.length * rowH + 10, l = 190;
+  let s = `<svg viewBox="0 0 ${W} ${Hh}" role="img" aria-label="Lost reasons">`;
+  rs.forEach(([r, c], i) => { const y = 5 + i * rowH, w = ((W - l - 40) * c) / max;
+    s += `<text x="${l - 8}" y="${y + 15}" text-anchor="end" style="fill:var(--ink-2)">${esc(r)}</text><path d="M${l},${y + 4} h${w - 4} q4,0 4,4 v8 q0,4 -4,4 h${-(w - 4)} Z" fill="var(--s2)"/><text x="${l + w + 6}" y="${y + 15}">${c}</text>`; });
+  $("#cLost").innerHTML = s + "</svg>";
 }
 
-/* ---------------------------------------------------------------- settings */
-$("#ints").innerHTML = [
-  ["f", "Facebook Messenger", "Glow Aesthetics Page · webhooks: messages, echoes, referrals, reads", "ok", "Connected"],
-  ["ig", "Instagram", "@glowaesthetics.ph · linked to the Page", "ok", "Connected"],
-  ["wa", "WhatsApp Business (Coexistence)", "+63 917 111 0000 · phone app stays in use", "warn", "Pending approval"],
-  ["cal", "Booking: Google Calendar", "Front desk calendar · matched by phone", "ok", "Syncing every 5 min"],
-  ["₱", "Payments: PayMongo", "Payment links carry the journey id", "ok", "Connected"],
-  ["api", "Events API (custom)", "Used by the POS for walk-ins and payments", "ok", "Key ••••3f2a"],
-  ["↗", "Outbound webhook", "crm.glow.ph · journey.hot, journey.won", "off", "Off"],
-  ["vb", "Viber", "Paid add-on, not set up", "off", "Not connected"],
-].map(([i, n, d, st, lbl]) => `<div class="int"><span class="ico">${i}</span><div><b>${n}</b><div class="small">${d}</div></div><span class="state ${st}">${lbl}</span></div>`).join("");
+/* ============================================================ dashboards */
+const DASHES = ["Owner weekly (template)", "Marketing: ads to patients (template)", "Front desk performance", "Dr. Cruz's patients (custom)"];
+let dash = 0;
+function dashboards() {
+  $("#dList").innerHTML = DASHES.map((d, i) => `<button class="btn ${i === dash ? "primary" : ""}" data-dash="${i}">${esc(d)}</button>`).join("");
+  $("#dList").querySelectorAll("[data-dash]").forEach((b) => b.addEventListener("click", () => { dash = +b.dataset.dash; dashboards(); }));
+  const bars = (vals, labels, col, W = 360) => { const Hh = 170, m = 24, bw = (W - m) / vals.length, max = Math.max(...vals);
+    return `<svg viewBox="0 0 ${W} ${Hh}" role="img">${vals.map((v, i) => { const h = ((Hh - 40) * v) / max, x = m + i * bw + 3, y = Hh - 20 - h;
+      return `<path d="M${x},${Hh - 20} V${y + 3} q0,-3 3,-3 h${bw - 12} q3,0 3,3 V${Hh - 20} Z" fill="${col}"/><text x="${x + (bw - 6) / 2}" y="${Hh - 6}" text-anchor="middle">${labels[i]}</text><text x="${x + (bw - 6) / 2}" y="${y - 4}" text-anchor="middle">${v}</text>`; }).join("")}</svg>`; };
+  const panel = (w, title, body) => `<div class="panel ${w}"><h3>${title}<span class="grip" title="Drag to move, drag corner to resize">⠿</span></h3>${body}</div>`;
+  const sets = [
+    [panel("w4", "Revenue this month", `<div class="big">${peso(612400)}</div><div class="small up">▲ 18% vs last month</div>`), panel("w4", "Booked consults", `<div class="big">38</div><div class="small up">▲ from 31</div>`), panel("w4", "Median first reply", `<div class="big">11m</div><div class="small up">▼ from 6h 11m</div>`),
+      panel("w8", "Bookings by weekday", bars([4, 6, 5, 7, 8, 12, 3], ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"], "var(--s1)", 720)), panel("w4", "Top 3 actions", `<ol style="margin:0;padding-left:18px;display:grid;gap:6px;font-size:.88rem"><li>Add slots to price replies</li><li>Turn on 2h reminders</li><li>Call 17 patients due for rebook</li></ol>`)],
+    [panel("w6", "Cost per booked patient by ad", bars([820, 2140, 1100, 960], ["Botox", "Laser", "Filler", "Booster"], "var(--s2)", 540)), panel("w6", "Conversations by source", bars([312, 188, 164, 96, 44], ["Msgr", "IG", "Laser ad", "WA", "Walk-in"], "var(--s1)", 540))],
+    [panel("w6", "Median first reply by staff", bars([4, 9, 22, 13], ["Mae", "Joy", "Kim", "AI"], "var(--s1)", 540)), panel("w6", "Unanswered by hour", bars([6, 9, 11, 4, 1, 0], ["8p", "9p", "10p", "11p", "12a", "1a"], "var(--s2)", 540))],
+    [panel("w12", "Dr. Cruz: consults and conversion", bars([9, 11, 8, 14], ["Wk 37", "Wk 38", "Wk 39", "Wk 40"], "var(--s1)", 1080) + `<p class="small">Custom panel the clinic asked for. Built in Metabase in about 10 minutes, no code change.</p>`)],
+  ];
+  $("#panels").innerHTML = sets[dash].join("");
+}
 
-/* ---------------------------------------------------------------- boot */
-overview(); queue(); pipeline(); contactsTable(); bottlenecks(); current = 0; curJ = contacts[0].pastJ; profile();
-let startView = location.hash.slice(1);
-if (!TITLES[startView]) { try { startView = localStorage.getItem("view") || "overview"; } catch (e) { startView = "overview"; } }
-go(startView);
+/* ============================================================ settings */
+function settings() {
+  const p = curPipe(); $("#setPipeName").textContent = p.name;
+  const evs = ["first message", "first staff/AI reply", "asks date, slot or location", "asks sessions or schedule", "booking tool webhook", "front desk 'Arrived'", "staff marks accepted", "payment webhook", "last session marked"];
+  $("#stageTbl").innerHTML = `<thead><tr><th></th><th>Stage name</th><th>Counted when</th><th>Target time</th><th>Alert if late</th></tr></thead><tbody>` +
+    p.stages.map((s, k) => `<tr><td class="handle" title="Drag to reorder">⠿</td><td><input type="text" id="st-${p.id}-${k}" value="${esc(s[0])}" aria-label="Stage name"></td>
+      <td><select id="ev-${p.id}-${k}" aria-label="Counted when">${evs.map((e) => `<option ${e === s[1] ? "selected" : ""}>${e}</option>`).join("")}</select></td>
+      <td>${k ? `<input type="number" id="tg-${p.id}-${k}" value="${s[2] >= 1440 ? Math.round(s[2] / 1440) : s[2] >= 60 ? Math.round(s[2] / 60) : s[2]}" aria-label="Target"> <span class="small">${s[2] >= 1440 ? "days" : s[2] >= 60 ? "hours" : "min"}</span>` : '<span class="small">–</span>'}</td>
+      <td>${k ? `<select id="al-${p.id}-${k}" aria-label="Alert"><option>${k === 1 ? "Front desk" : k >= 3 ? "Manager (digest)" : "Nobody"}</option><option>Front desk</option><option>Manager</option><option>Nobody</option></select>` : '<span class="small">–</span>'}</td></tr>`).join("") + "</tbody>";
+  $("#mapTbl").innerHTML = PIPELINES.map((pp) => `<div style="display:grid;grid-template-columns:180px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)"><b>${esc(pp.name)}</b><div class="mapchips">${pp.interests.map((i) => `<span class="lbl">${i}</span>`).join("")}<button class="btn sm" onclick="toast('Add treatment (mock)')">+</button></div></div>`).join("") +
+    `<p class="small" style="margin-top:8px">Unknown treatment → Injectables by default. A returning patient asking about a different treatment opens a new journey in that pipeline.</p>`;
+}
+
+/* ============================================================ sources */
+$("#ints").innerHTML = [
+  ["f", "Facebook Messenger", "Glow Aesthetics Page · messages, echoes, referrals, reads", "ok", "Connected · last event 2m ago"],
+  ["ig", "Instagram", "@glowaesthetics.ph · linked to the Page", "ok", "Connected · last event 14m ago"],
+  ["wa", "WhatsApp Business (Coexistence)", "+63 917 111 0000 · phone app stays in use", "warn", "Pending approval"],
+  ["cal", "Booking: Cal.com", "booking.created / cancelled / rescheduled", "ok", "Connected"],
+  ["₱", "Payments: PayMongo", "payment links carry the journey id", "ok", "Connected"],
+  ["api", "Events API (custom)", "POS sends walk-ins and payments", "ok", "Key ••••3f2a"],
+  ["csv", "CSV import", "old patient list, 1,284 rows, Sep 30", "ok", "Imported"],
+  ["vb", "Viber", "paid add-on, not set up", "off", "Not connected"],
+].map(([i, n, d, st, lbl]) => `<div style="display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)"><span style="width:36px;height:36px;border-radius:9px;display:grid;place-items:center;font:800 .8rem var(--f-mono);background:var(--band);color:var(--ink-2)">${i}</span><div><b>${n}</b><div class="small">${d}</div></div><span class="mono" style="color:${st === "ok" ? "var(--good)" : st === "warn" ? "var(--warm)" : "var(--muted)"};font-weight:600">${lbl}</span></div>`).join("");
+
+/* ============================================================ theme (light by default) */
+function setTheme(dark) { document.body.classList.toggle("dark", dark); $("#themeBtn").textContent = dark ? "Light mode" : "Dark mode"; $("#themeBtn").setAttribute("aria-pressed", String(dark));
+  try { localStorage.setItem("theme2", dark ? "dark" : "light"); } catch (e) {} }
+$("#themeBtn").addEventListener("click", () => setTheme(!document.body.classList.contains("dark")));
+try { setTheme(localStorage.getItem("theme2") === "dark"); } catch (e) { setTheme(false); }
+
+/* ============================================================ boot */
+function renderAll() { queue(); overview(); journeysView(); pipeline(); contactsTable(); logView(); bottlenecks(); dashboards(); settings(); }
+renderAll();
+let start = location.hash.slice(1);
+if (!TITLES[start]) { try { start = localStorage.getItem("view2") || "journeys"; } catch (e) { start = "journeys"; } }
+go(start);
 </script>
