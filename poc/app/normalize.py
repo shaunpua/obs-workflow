@@ -2,7 +2,8 @@
 
 Every adapter returns a list of dicts like:
     {channel, channel_external_id, customer_id, customer_name, direction ('in'|'out'),
-     message_id, sent_at (datetime, UTC), text, app_id, referral {ad_id, source} | None}
+     message_id, sent_at (datetime, UTC), text, app_id, referral {ad_id, source} | None,
+     attachments [{type, url, title}]  (references only: files are never downloaded)}
 
 Adding a new channel (Viber Business, TikTok, Chatwoot, a web chat) means writing
 one more adapter. Nothing downstream changes.
@@ -24,6 +25,28 @@ def _referral(obj: dict | None) -> dict | None:
     if not obj:
         return None
     return {"ad_id": obj.get("ad_id") or obj.get("source_id"), "source": (obj.get("source") or obj.get("source_type") or "").lower()}
+
+
+def _attachments(msg: dict) -> list[dict]:
+    """Messenger/Instagram `message.attachments` -> [{type, url, title}].
+
+    type is image|video|audio|file|location|sticker|link|template|<other>. A shared link arrives as Meta's
+    `fallback` attachment (title + url, sometimes only inside `payload`) and is stored as type "link".
+    The url is Meta's CDN address (it expires): we keep the reference, we don't fetch the file.
+    """
+    out = []
+    for a in msg.get("attachments") or []:
+        payload = a.get("payload") or {}
+        kind = a.get("type") or "unknown"
+        url = payload.get("url") or a.get("url")
+        item = {"type": "link" if kind == "fallback" else kind, "url": url, "title": a.get("title") or payload.get("title")}
+        if kind == "image" and payload.get("sticker_id"):
+            item["type"] = "sticker"
+        coords = payload.get("coordinates")
+        if kind == "location" and coords:
+            item["lat"], item["long"] = coords.get("lat"), coords.get("long")
+        out.append(item)
+    return out
 
 
 def from_meta_messaging(payload: dict) -> list[dict]:
@@ -49,6 +72,7 @@ def from_meta_messaging(payload: dict) -> list[dict]:
                 "app_id": str(msg["app_id"]) if msg.get("app_id") else None,
                 # click-to-message ads put the ad id on the first message
                 "referral": _referral(ev.get("referral") or msg.get("referral")),
+                "attachments": _attachments(msg),
             })
     return out
 

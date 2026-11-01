@@ -34,8 +34,9 @@ Ports avoid 3000/5432/8000 used by other projects on this machine.
 | File | Job |
 |---|---|
 | `app/main.py` | HTTP routes: Meta webhook (verify + signed POST), Chatwoot webhook, `/api/events`, `/api/tick`, `/api/leads`, `/api/leads/{id}/trace`, `/health` |
-| `app/normalize.py` | Channel payload → one message shape (Messenger/IG, WhatsApp, Chatwoot). Reads, deliveries etc. are skipped (kept raw) |
-| `app/pipeline.py` | Leads, messages, events; stage, next action, trace |
+| `app/normalize.py` | Channel payload → one message shape (Messenger/IG, WhatsApp, Chatwoot), incl. `attachments` (Messenger/IG only). Reads, deliveries etc. are skipped (kept raw) |
+| `app/contacts.py` | Pure helpers: phone / email / URL extraction from message text |
+| `app/pipeline.py` | Leads, messages, events; stage, next action, trace. Outbound messages matching a client's `ignore_replies` regex get `actor=auto_reply` (stored, never counted as a reply). Phone/email typed by the guest are copied to the lead |
 | `app/classify.py` | Hot/warm/cold from niche keyword rules; optional LLM (`LLM_CLASSIFY=1`) |
 | `app/alerts.py` | Alert checks (`/api/tick`), Telegram or console |
 | `app/profiles.py` | Fills guest names after the webhook is answered |
@@ -50,8 +51,8 @@ Ports avoid 3000/5432/8000 used by other projects on this machine.
 | `clients` | business we serve | hours, timezone, merged config |
 | `channels` | Page / IG account / WhatsApp number | routes a webhook to a client |
 | `raw_webhooks` | request received | payload, signature ok, processed, error |
-| `leads` | person per client per channel | stage, temperature, score, intent, waiting since |
-| `messages` | message, both directions | `actor` = customer / staff / ai; `app_id` tells AI echoes from inbox echoes |
+| `leads` | person per client per channel | stage, temperature, score, intent, waiting since, `phone`/`email` (first typed by the guest) |
+| `messages` | message, both directions | `actor` = customer / staff / ai / auto_reply; `app_id` tells AI echoes from inbox echoes; `attachments` JSONB = `[{type,url,title}]` references (never downloaded) |
 | `events` | business event (append-only) | the trace; bookings/payments arrive via `/api/events` |
 | `lead_labels` | classification | history for auditing accuracy |
 | `alerts` | alert fired | one open alert per lead and type |

@@ -29,9 +29,9 @@ show dashboards/alerts. Master plan `docs/POC_PLAN.md`; index `docs/README.md`. 
   PRODUCT_UX, BUILD_VS_BUY, mockups, `ops/` = LOCAL_SETUP, SETUP_META, RUNBOOK). All internal links verified.
 
 ## Known issues / not built (in priority order)
-1. **Meta's automatic "away" reply is counted as the first staff reply** (same inbox app id as human replies) → first-reply times look like 0.1 min. Needs a per-client
+1. ~~**Meta's automatic "away" reply is counted as the first staff reply**~~ **DONE (cloud session, simulated data only):** client YAML `ignore_replies: [regex]`; matches are stored with `actor=auto_reply` and ignored by `v_reply_pairs`, `first_reply`, alerts and `awaiting_reply`. `my-airbnb-page.yaml` has the "thanks for contacting us… we're currently away" pattern. **Not yet verified against a real away echo** (test uses a documented-shape payload): on the laptop, send a message while away and check `/admin/trace`. Original note: (same inbox app id as human replies) → first-reply times look like 0.1 min. Needs a per-client
    "ignore replies matching this text/pattern" rule (config + normalize/pipeline + test). Highest-value fix.
-2. Attachments, shared links, images are ignored (only message text stored). Contact details (phone/email) are never captured: Messenger doesn't provide them — extract from
+2. ~~Attachments, links, phone/email~~ **DONE for Messenger/IG (simulated payloads):** `messages.attachments` (references only), `leads.phone`/`leads.email` from guest text. Not done: WhatsApp media, `messaging_customer_information` / lead-form payloads, showing phone/email in `/admin` and Grafana. Original note: attachments, shared links, images were ignored. Contact details (phone/email) were never captured: Messenger doesn't provide them — extract from
    message text, and/or read `messaging_customer_information` / `messaging_in_thread_lead_form_submit` payloads (not yet seen in real data).
 3. Read/delivery/postback/etc. webhooks are stored raw but not processed. Calls (`calls`, `call_permission_reply`) unverified.
 4. Tunnel is a throwaway quick tunnel: new URL every restart → must re-paste Callback URL in Meta. Needs a fixed address (named Cloudflare tunnel with a domain, ngrok free

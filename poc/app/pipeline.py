@@ -11,6 +11,7 @@ import re
 from datetime import datetime
 
 from .classify import llm_classify, rule_classify
+from .contacts import extract_emails, extract_phones, extract_urls
 
 log = logging.getLogger("pipeline")
 
@@ -43,6 +44,28 @@ def is_auto_reply(cfg: dict, text: str | None) -> bool:
         except re.error:
             log.warning("[%s] bad ignore_replies pattern %r", cfg.get("client_id"), pattern)
     return False
+
+
+def _with_text_links(m: dict) -> list[dict]:
+    """Attachments from the platform plus any URL typed/pasted in the text (not already attached)."""
+    items = list(m.get("attachments") or [])
+    known = {a.get("url") for a in items}
+    for url in extract_urls(m.get("text")):
+        if url not in known:
+            items.append({"type": "link", "url": url, "title": None, "from_text": True})
+    return items
+
+
+def _capture_contacts(conn, client_id, lead: dict, m: dict) -> None:
+    """Phone/email the guest typed. First one seen is kept on the lead; each capture is a trace event."""
+    for field, found in (("phone", extract_phones(m.get("text"))), ("email", extract_emails(m.get("text")))):
+        if not found or lead.get(field):
+            continue
+        conn.execute(f"UPDATE leads SET {field}=%s WHERE lead_id=%s AND {field} IS NULL", (found[0], lead["lead_id"]))
+        lead[field] = found[0]
+        add_event(conn, client_id, lead["lead_id"], f"{field}_captured", m["sent_at"], actor="customer",
+                  props={"message_id": m["message_id"], "count_in_message": len(found)},
+                  dedupe_key=f"{field}_captured:{lead['lead_id']}")
 
 
 def _get_or_create_lead(conn, client_id, m) -> tuple[dict, bool]:
@@ -81,14 +104,18 @@ def ingest_message(conn, clients: dict, m: dict, raw_id: int | None = None) -> s
         actor = "ai" if m.get("app_id") and m["app_id"] == cfg.get("ai_app_id") else "staff"
 
     inserted = conn.execute(
-        """INSERT INTO messages (message_id, client_id, lead_id, channel, direction, actor, sent_at, body, app_id, raw_id)
-           VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) ON CONFLICT (message_id) DO NOTHING RETURNING message_id""",
+        """INSERT INTO messages (message_id, client_id, lead_id, channel, direction, actor, sent_at, body, app_id, raw_id,
+                                 attachments)
+           VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s) ON CONFLICT (message_id) DO NOTHING RETURNING message_id""",
         (m["message_id"], client_id, lead["lead_id"], m["channel"], m["direction"], actor, m["sent_at"],
-         m.get("text"), m.get("app_id"), raw_id),
+         m.get("text"), m.get("app_id"), raw_id, json.dumps(_with_text_links(m))),
     ).fetchone()
     if not inserted:
         conn.commit()
         return "duplicate"   # Meta retries deliveries; the message id makes this idempotent
+
+    if m["direction"] == "in":
+        _capture_contacts(conn, client_id, lead, m)
 
     if m["direction"] == "out" and actor != AUTO_REPLY:
         had_inbound = conn.execute("SELECT 1 FROM messages WHERE lead_id=%s AND direction='in' AND sent_at < %s LIMIT 1",

@@ -118,3 +118,10 @@ CREATE TABLE IF NOT EXISTS alerts (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS alerts_one_open
   ON alerts (lead_id, alert_type) WHERE resolved_at IS NULL;
+
+-- Added after M1 (idempotent: this file is re-run on every start).
+-- Attachments/shared links per message: [{type, url, title}], references only, never downloaded.
+ALTER TABLE messages ADD COLUMN IF NOT EXISTS attachments JSONB NOT NULL DEFAULT '[]';
+-- Contact details the guest typed into the chat (first one seen wins; staff messages are never mined).
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS phone TEXT;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS email TEXT;
