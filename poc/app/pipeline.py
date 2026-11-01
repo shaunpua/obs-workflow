@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from datetime import datetime
 
 from .classify import llm_classify, rule_classify
@@ -26,6 +27,22 @@ def add_event(conn, client_id, lead_id, event_type, occurred_at, actor=None, val
            VALUES (%s,%s,%s,%s,%s,%s,%s,%s) ON CONFLICT (dedupe_key) DO NOTHING""",
         (client_id, lead_id, event_type, occurred_at, actor, value, json.dumps(props or {}), dedupe_key),
     )
+
+
+AUTO_REPLY = "auto_reply"   # actor for canned replies (e.g. Meta's "away" message): stored, never counted as a reply
+
+
+def is_auto_reply(cfg: dict, text: str | None) -> bool:
+    """True if an outbound message matches one of the client's `ignore_replies` regexes (case-insensitive)."""
+    if not text:
+        return False
+    for pattern in cfg.get("ignore_replies") or []:
+        try:
+            if re.search(pattern, text, re.IGNORECASE | re.DOTALL):
+                return True
+        except re.error:
+            log.warning("[%s] bad ignore_replies pattern %r", cfg.get("client_id"), pattern)
+    return False
 
 
 def _get_or_create_lead(conn, client_id, m) -> tuple[dict, bool]:
@@ -58,6 +75,8 @@ def ingest_message(conn, clients: dict, m: dict, raw_id: int | None = None) -> s
 
     if m["direction"] == "in":
         actor = "customer"
+    elif is_auto_reply(cfg, m.get("text")):
+        actor = AUTO_REPLY
     else:
         actor = "ai" if m.get("app_id") and m["app_id"] == cfg.get("ai_app_id") else "staff"
 
@@ -71,7 +90,7 @@ def ingest_message(conn, clients: dict, m: dict, raw_id: int | None = None) -> s
         conn.commit()
         return "duplicate"   # Meta retries deliveries; the message id makes this idempotent
 
-    if m["direction"] == "out":
+    if m["direction"] == "out" and actor != AUTO_REPLY:
         had_inbound = conn.execute("SELECT 1 FROM messages WHERE lead_id=%s AND direction='in' AND sent_at < %s LIMIT 1",
                                    (lead["lead_id"], m["sent_at"])).fetchone()
         if had_inbound:
@@ -121,7 +140,8 @@ def _next_action(cfg: dict, lead: dict, now: datetime) -> tuple[str, int]:
 
 def refresh_lead(conn, cfg: dict, lead_id, now: datetime, new_inbound: bool = False) -> dict:
     """Recompute everything derived for one lead. Safe to call any time (idempotent)."""
-    msgs = conn.execute("SELECT direction, actor, sent_at, body FROM messages WHERE lead_id=%s AND sent_at <= %s ORDER BY sent_at",
+    msgs = conn.execute("SELECT direction, actor, sent_at, body FROM messages WHERE lead_id=%s AND sent_at <= %s "
+                        "AND actor <> 'auto_reply' ORDER BY sent_at",
                         (lead_id, now)).fetchall()
     lead = conn.execute("SELECT * FROM leads WHERE lead_id=%s", (lead_id,)).fetchone()
     client_id = lead["client_id"]
@@ -189,7 +209,8 @@ def lead_trace(conn, lead_id) -> list[dict]:
     """A lead's trace: messages + business events merged on one timeline,
     each with the time since the previous span (the 'latency' between steps)."""
     rows = conn.execute(
-        """SELECT sent_at AS at, CASE WHEN direction='in' THEN 'customer_message' ELSE actor || '_reply' END AS kind,
+        """SELECT sent_at AS at, CASE WHEN direction='in' THEN 'customer_message' WHEN actor='auto_reply' THEN 'auto_reply'
+                                      ELSE actor || '_reply' END AS kind,
                   actor, body AS detail, NULL::numeric AS value
              FROM messages WHERE lead_id=%(id)s
            UNION ALL

@@ -24,3 +24,8 @@ ai_app_id: "${META_APP_ID}"
 overrides:
   sla:
     hot_unanswered_alert_minutes: 15
+
+# Outbound messages matching any of these (case-insensitive regex) are stored but do NOT count as a reply.
+# Meta's automatic "away" message is sent from the same inbox app id as human replies, so match on text.
+ignore_replies:
+  - "thanks for contacting us.{0,20}we.re currently away"

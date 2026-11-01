@@ -37,7 +37,7 @@ $$;
 
 -- Response-time pairs.
 -- Rule: the clock starts at the FIRST customer message after the business last spoke,
--- and stops at the business's next message. Three customer messages in a row = one wait.
+-- and stops at the business's next real message (auto-replies are ignored, see ignore_replies). Three customer messages in a row = one wait.
 CREATE OR REPLACE VIEW v_reply_pairs AS
 WITH m AS (
   SELECT *,
@@ -45,6 +45,7 @@ WITH m AS (
            PARTITION BY lead_id ORDER BY sent_at, message_id
            ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING), 0) AS outs_before
   FROM messages
+  WHERE NOT (direction = 'out' AND actor = 'auto_reply')   -- canned replies are stored but never close a wait
 ),
 waits AS (            -- one row per block of unanswered customer messages
   SELECT client_id, lead_id, outs_before AS block, MIN(sent_at) AS asked_at, COUNT(*) AS msgs_in_block

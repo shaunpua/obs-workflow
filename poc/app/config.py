@@ -36,7 +36,8 @@ def load_client(path: Path) -> dict:
     client = yaml.safe_load(_expand_env(path.read_text()))
     niche = yaml.safe_load((CONFIG_DIR / "niches" / f"{client['niche']}.yaml").read_text())
     merged = deep_merge(niche, client.get("overrides", {}))
-    for key in ("client_id", "name", "niche", "timezone", "business_hours", "channels", "ai_app_id", "alerts"):
+    for key in ("client_id", "name", "niche", "timezone", "business_hours", "channels", "ai_app_id", "alerts",
+                "ignore_replies"):
         if key in client:
             merged[key] = client[key]
     return merged
