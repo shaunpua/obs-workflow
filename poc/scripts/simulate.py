@@ -12,7 +12,7 @@ The story baked into the data:
 
 Usage:
     python -m scripts.simulate                 # in-process (no server needed)
-    python -m scripts.simulate --url http://localhost:8000
+    python -m scripts.simulate --url http://localhost:8765
 """
 from __future__ import annotations
 

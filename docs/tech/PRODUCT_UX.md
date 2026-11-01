@@ -1,6 +1,6 @@
 # Product and UX: views, customisation, scaling
 
-Companion to `docs/mockups/client-app.html` (clickable, fake data, light by default with a dark switch).
+Companion to `docs/tech/mockups/client-app.html` (clickable, fake data, light by default with a dark switch).
 
 ---
 
@@ -136,7 +136,7 @@ Rule from your own world: **no per-tenant code forks.** Config, templates and th
 
 ## 6. What this changes in the POC build
 
-Added to `docs/POC_IMPLEMENTATION.md`:
+Added to `docs/tech/POC_IMPLEMENTATION.md`:
 - `pipelines` and `pipeline_stages` tables (M2), with treatment → pipeline mapping from `clinic.yaml`.
 - Journeys trace screen and Activity log screen in the portal (M4).
 - Pipelines & rules screen: edit stages, targets, alerts, tags, quick links (M4, simple forms).

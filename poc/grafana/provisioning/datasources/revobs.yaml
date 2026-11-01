@@ -1,0 +1,11 @@
+apiVersion: 1
+datasources:
+  - name: revobs
+    uid: revobs-pg
+    type: postgres
+    access: proxy
+    url: db:5432                 # the database container, on the compose network
+    user: revobs_ro              # read-only login, created by db/003_readonly.sql
+    isDefault: true
+    jsonData: { database: revobs, sslmode: disable, postgresVersion: 1600, timescaledb: false }
+    secureJsonData: { password: revobs_ro }

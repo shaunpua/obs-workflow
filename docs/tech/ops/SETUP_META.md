@@ -24,14 +24,14 @@ Keep secrets (app secret, page token) on your machine only. Don't paste them int
 
 ## 1. Start the app locally
 
-See `LOCAL_SETUP.md` steps 1–5. In short: create `poc/.env` from `.env.example`, start the database with `docker compose up -d db`, then run `uvicorn app.main:app --port 8000` from `poc/`. The app loads `.env` itself.
+See `LOCAL_SETUP.md` steps 1–5. In short: create `poc/.env` from `.env.example`, start the database with `docker compose up -d db`, then run `uvicorn app.main:app --port 8765` from `poc/`. The app loads `.env` itself.
 
 Set now: `META_VERIFY_TOKEN` (any string) and `META_PAGE_ID`. The rest comes in the next steps (restart uvicorn after each change to `.env`).
 
 ## 2. Expose it with a tunnel
 
 ```bash
-cloudflared tunnel --url http://localhost:8000
+cloudflared tunnel --url http://localhost:8765
 ```
 
 Copy the `https://….trycloudflare.com` address. It changes every time you restart the tunnel, so update Meta's webhook URL when it does.

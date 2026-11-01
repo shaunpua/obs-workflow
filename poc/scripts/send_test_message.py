@@ -4,7 +4,7 @@ Use it to check the pipeline before involving Meta:
 
     python -m scripts.send_test_message                      # a guest message, then a staff reply 3 minutes later
     python -m scripts.send_test_message --text "Hi, available po sa Oct 18? 4 pax"
-    python -m scripts.send_test_message --url http://localhost:8000 --no-reply
+    python -m scripts.send_test_message --url http://localhost:8765 --no-reply
 
 Then run:  python -m scripts.show_recent --client my-airbnb
 """
@@ -33,7 +33,7 @@ def send(url: str, secret: str, payload: dict) -> httpx.Response:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--url", default="http://localhost:8000")
+    ap.add_argument("--url", default="http://localhost:8765")
     ap.add_argument("--text", default="Hi! Available po ba sa Oct 18-19? 4 pax kami. Magkano po?")
     ap.add_argument("--reply-text", default="Hello po! Yes available. 4,500 per night.")
     ap.add_argument("--no-reply", action="store_true")

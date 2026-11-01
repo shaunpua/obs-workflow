@@ -9,9 +9,9 @@
       "problemMatcher": []
     },
     {
-      "label": "2. Tunnel: expose port 8000 (cloudflared)",
+      "label": "2. Tunnel: expose port 8765 (cloudflared)",
       "type": "shell",
-      "command": "cloudflared tunnel --url http://localhost:8000",
+      "command": "cloudflared tunnel --url http://localhost:8765",
       "isBackground": true,
       "problemMatcher": []
     },

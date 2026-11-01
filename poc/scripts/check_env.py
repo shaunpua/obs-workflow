@@ -28,7 +28,7 @@ def main() -> int:
 
     print("\n1. Environment (.env)")
     required = {
-        "DATABASE_URL": "postgresql://revobs:revobs@localhost:5432/revobs",
+        "DATABASE_URL": "postgresql://revobs:revobs@localhost:55432/revobs",
         "META_APP_ID": "App settings → Basic → App ID",
         "META_APP_SECRET": "App settings → Basic → App Secret (click Show)",
         "META_VERIFY_TOKEN": "any string you choose; you type the same one into Meta's webhook settings",
@@ -56,20 +56,37 @@ def main() -> int:
 
     print("\n3. Facebook Page token")
     page_id, token = os.environ.get("META_PAGE_ID"), os.environ.get("META_PAGE_TOKEN")
-    if page_id and token:
+    app_id, app_secret = os.environ.get("META_APP_ID"), os.environ.get("META_APP_SECRET")
+    if page_id and token and app_id and app_secret:
         ver = os.environ.get("GRAPH_VERSION", "v23.0")
         try:
-            r = httpx.get(f"https://graph.facebook.com/{ver}/{page_id}", params={"fields": "name", "access_token": token}, timeout=15)
-            if r.status_code == 200:
-                line(OK, f"token works for Page: {r.json().get('name')}")
-            else:
+            # debug_token needs no extra permission (unlike reading the Page's name)
+            r = httpx.get(f"https://graph.facebook.com/{ver}/debug_token",
+                          params={"input_token": token, "access_token": f"{app_id}|{app_secret}"}, timeout=15)
+            d = r.json().get("data") if r.status_code == 200 else None
+            if d is None:
                 problems += 1
                 msg = r.json().get("error", {}).get("message", r.text[:150])
-                line(BAD, f"Meta rejected the token or Page ID: {msg}")
+                line(BAD, f"Meta rejected the check (is META_APP_ID / META_APP_SECRET right?): {msg}")
+            elif not d.get("is_valid"):
+                problems += 1
+                line(BAD, f"the token is not valid: {d.get('error', {}).get('message', 'regenerate it in Messenger API settings')}")
+            elif d.get("type") != "PAGE":
+                problems += 1
+                line(BAD, f"this is a {d.get('type')} token, not a Page token. Use Messenger API settings -> Generate token")
+            elif str(d.get("profile_id")) != str(page_id):
+                problems += 1
+                line(BAD, f"the token belongs to Page {d.get('profile_id')}, but META_PAGE_ID is {page_id}. Use {d.get('profile_id')}")
+            else:
+                scopes = d.get("scopes", [])
+                line(OK, f"token is a valid Page token for Page {page_id} (permissions: {', '.join(scopes)})")
+                if "pages_messaging" not in scopes:
+                    problems += 1
+                    line(BAD, "the token lacks pages_messaging. Regenerate it after adding the Messenger use case")
         except Exception as exc:
             line(WARN, f"could not reach Meta: {exc}")
     else:
-        line(WARN, "skipped (needs META_PAGE_ID and META_PAGE_TOKEN)")
+        line(WARN, "skipped (needs META_PAGE_ID, META_PAGE_TOKEN, META_APP_ID and META_APP_SECRET)")
 
     if args.url:
         print("\n4. Public URL")

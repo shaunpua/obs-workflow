@@ -61,6 +61,10 @@ def sync_clients_to_db(conn, clients: dict[str, dict]) -> None:
                  hours.get("open", "09:00"), hours.get("close", "20:00"), hours.get("days", [1, 2, 3, 4, 5, 6]),
                  json.dumps(cfg)),
             )
+            # Drop channel ids this client no longer has in its YAML (e.g. an old placeholder Page id).
+            keep = [(ch, v["external_id"]) for ch, v in cfg.get("channels", {}).items() if v.get("external_id")]
+            cur.execute("DELETE FROM channels WHERE client_id=%s AND NOT ((channel, external_id) IN (SELECT * FROM unnest(%s::text[], %s::text[])))",
+                        (cfg["client_id"], [k[0] for k in keep], [k[1] for k in keep]))
             for channel, ch in cfg.get("channels", {}).items():
                 if not ch.get("external_id"):      # e.g. META_PAGE_ID not set yet
                     continue

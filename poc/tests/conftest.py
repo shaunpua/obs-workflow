@@ -6,13 +6,14 @@ import os
 import pytest
 
 # Must be set before app.main is imported (it connects at import time).
-os.environ.setdefault("DATABASE_URL", "postgresql://postgres@/revobs_test?host=/var/tmp/pgpoc&port=5433")
+os.environ.setdefault("DATABASE_URL", "postgresql://revobs:revobs@localhost:55432/revobs_test")
 os.environ["META_APP_SECRET"] = "test-secret"
 os.environ["META_VERIFY_TOKEN"] = "test-verify"
 os.environ["META_PAGE_ID"] = "PAGE_TEST_1"
 os.environ["META_APP_ID"] = "APP_AI_1"
-os.environ.pop("META_PAGE_TOKEN", None)
-os.environ.pop("META_PAGE_TOKENS", None)
+# Empty (not popped): app/__init__ loads poc/.env, which would otherwise put the real token back and make tests call Meta.
+os.environ["META_PAGE_TOKEN"] = ""
+os.environ["META_PAGE_TOKENS"] = "{}"
 
 import psycopg  # noqa: E402
 

@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import time
 
 import httpx
 
@@ -27,13 +28,30 @@ def page_token(page_id: str) -> str | None:
     return tokens.get(page_id) or os.environ.get("META_PAGE_TOKEN")
 
 
-def fetch_profile(psid: str, token: str) -> dict | None:
+_retry_after: dict[str, float] = {}   # psid -> time before which we don't ask Meta again (stops a retry on every webhook)
+RETRY_SECONDS = 600
+
+
+def fetch_profile(psid: str, token: str, page_id: str | None = None) -> dict | None:
+    """Name for a PSID. Tries the User Profile API, then the Page's conversations list.
+
+    The per-user lookup is often refused (permission/app-mode), while the conversations
+    endpoint works with the plain pages_messaging token and returns the participant's name.
+    """
     r = httpx.get(f"https://graph.facebook.com/{GRAPH_VERSION}/{psid}",
                   params={"fields": "first_name,last_name,profile_pic", "access_token": token}, timeout=10)
-    if r.status_code != 200:
-        log.warning("profile lookup for %s failed: %s %s", psid, r.status_code, r.text[:200])
-        return None
-    return r.json()
+    if r.status_code == 200:
+        return r.json()
+    if page_id:
+        r2 = httpx.get(f"https://graph.facebook.com/{GRAPH_VERSION}/{page_id}/conversations",
+                       params={"user_id": psid, "fields": "participants", "access_token": token}, timeout=10)
+        if r2.status_code == 200:
+            for conv in r2.json().get("data", []):
+                for person in conv.get("participants", {}).get("data", []):
+                    if str(person.get("id")) == str(psid) and person.get("name"):
+                        return {"first_name": person["name"]}
+    log.warning("name lookup for %s failed: %s %s", psid, r.status_code, r.text[:120])
+    return None
 
 
 def fill_missing_names(limit: int = 20) -> int:
@@ -48,10 +66,11 @@ def fill_missing_names(limit: int = 20) -> int:
                     ORDER BY l.created_at DESC LIMIT %s""", (limit,)).fetchall()
             for row in rows:
                 token = page_token(row["page_id"])
-                if not token:
+                if not token or _retry_after.get(row["external_user_id"], 0) > time.time():
                     continue
-                prof = fetch_profile(row["external_user_id"], token)
+                prof = fetch_profile(row["external_user_id"], token, row["page_id"])
                 if not prof:
+                    _retry_after[row["external_user_id"]] = time.time() + RETRY_SECONDS
                     continue
                 name = " ".join(x for x in (prof.get("first_name"), prof.get("last_name")) if x)
                 if name:

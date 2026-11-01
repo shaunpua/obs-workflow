@@ -6,7 +6,20 @@ services:
       POSTGRES_USER: revobs
       POSTGRES_PASSWORD: revobs
       POSTGRES_DB: revobs
-    ports: ["5432:5432"]
+    container_name: revobs-db        # unique name so it never clashes with your other projects
+    ports: ["${DB_PORT:-55432}:5432"]   # 55432, not 5432, because other apps here use 5432
     volumes: ["revobs-data:/var/lib/postgresql/data"]
+  grafana:                      # dashboards: http://localhost:3100  (viewing needs no login; edit with admin / admin)
+    image: grafana/grafana-oss:latest
+    container_name: revobs-grafana
+    depends_on: [db]
+    ports: ["127.0.0.1:${GRAFANA_PORT:-3100}:3000"]   # 3100 so it never clashes with your other apps on 3000
+    environment:
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_USERS_DEFAULT_THEME: light
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
 volumes:
   revobs-data:

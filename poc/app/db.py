@@ -4,7 +4,7 @@ from pathlib import Path
 import psycopg
 from psycopg.rows import dict_row
 
-DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://revobs:revobs@localhost:5432/revobs")
+DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://revobs:revobs@localhost:55432/revobs")
 DB_DIR = Path(__file__).resolve().parent.parent / "db"
 
 

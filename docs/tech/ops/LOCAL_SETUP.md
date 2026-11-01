@@ -14,6 +14,8 @@ Time: about 30–45 minutes the first time, most of it in Meta's dashboard.
 | cloudflared (free tunnel) | `cloudflared --version` | macOS: `brew install cloudflared`. Windows: `winget install Cloudflare.cloudflared`. Others: https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/ |
 | Git | `git --version` | https://git-scm.com |
 
+> **Ports:** this project uses **8765** (app) and **55432** (database) so it never clashes with your other apps (which use 8000, 5432 and similar). Nothing else to configure.
+
 ## 1. Get the code and open it
 
 ```bash
@@ -30,6 +32,7 @@ VS Code will offer to install the recommended extensions (Python, Pylance, Docke
 ```bash
 cd poc
 python3 -m venv .venv                      # Windows: py -m venv .venv
+                                           # Ubuntu/WSL error "ensurepip is not available"? run: sudo apt install python3.10-venv
 source .venv/bin/activate                  # Windows PowerShell: .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 ```
@@ -47,7 +50,7 @@ Run the task: `Cmd/Ctrl+Shift+P` → **Tasks: Run Task** → **1. Database: star
 cp .env.example .env                       # Windows: copy .env.example .env
 ```
 
-Open `poc/.env` in VS Code. Fill these in as you collect them:
+Open `poc/.env` in VS Code. Every line you must edit is marked `>>> FILL <<<` in the file. `META_VERIFY_TOKEN` and `API_KEY` are already filled with local values; you only need the four Meta values:
 
 | Variable | Value | Where it comes from |
 |---|---|---|
@@ -63,7 +66,7 @@ Open `poc/.env` in VS Code. Fill these in as you collect them:
 
 ## 5. Check the app works before touching Meta
 
-1. Start the app: **Run and Debug** (left bar) → **App: run the webhook server** → ▶. (Or terminal: `uvicorn app.main:app --port 8000 --reload`.)
+1. Start the app: **Run and Debug** (left bar) → **App: run the webhook server** → ▶. (Or terminal: `uvicorn app.main:app --port 8765 --reload`.)
 2. Run **Script: send a fake test message**. It sends a signed fake guest message and a staff reply to your own local app.
 3. Run **Script: show what was received**. You should see the guest message, the staff reply, a reply time of about 3 minutes, and the lead labelled (probably hot).
 
@@ -71,11 +74,11 @@ If that works, the whole pipeline is fine and only the Meta connection is left. 
 
 ## 6. Connect Meta
 
-Keep the app running. Open a second terminal and run the task **2. Tunnel: expose port 8000 (cloudflared)**. Copy the `https://….trycloudflare.com` address it prints.
+Keep the app running. Open a second terminal and run the task **2. Tunnel: expose port 8765 (cloudflared)**. Copy the `https://….trycloudflare.com` address it prints.
 
 Run **3. Check my setup** (or `python -m scripts.check_env --url https://<your-tunnel>`). It tells you exactly which variable is missing or wrong, whether your Page token works, and whether Meta's verification will pass.
 
-Then follow `docs/SETUP_META.md` for the dashboard clicks: create the app, add Messenger, set the webhook URL to `https://<your-tunnel>/webhooks/meta` with your verify token, add your Page, tick the event fields, and run **4. Subscribe my Page to Meta events**.
+Then follow `docs/tech/ops/SETUP_META.md` for the dashboard clicks: create the app, add Messenger, set the webhook URL to `https://<your-tunnel>/webhooks/meta` with your verify token, add your Page, tick the event fields, and run **4. Subscribe my Page to Meta events**.
 
 ## 7. Test with real messages
 
@@ -85,6 +88,21 @@ Then follow `docs/SETUP_META.md` for the dashboard clicks: create the app, add M
 
 Done when you see the guest's message, your reply as `staff`, and the reply time.
 
+## Watching what happens (logs, metrics, traces)
+
+With the app running, open `http://localhost:8765/admin?key=<API_KEY from poc/.env>`. Plain pages, no setup:
+
+| Page | Shows |
+|---|---|
+| `/admin` | Metrics: webhooks received/failed, messages in/out, reply times per day (raw and business-hours), leads by temperature, open alerts |
+| `/admin/logs` | Every webhook as received (with errors), every message, and the app's own log lines |
+| `/admin/leads` | One row per lead, each linking to its trace |
+| `/admin/trace/<lead>` | That lead's timeline: each step, minutes since the previous step, and why it was classified hot/warm/cold |
+
+The key is required because the tunnel makes the whole app public.
+
+**Grafana dashboard (nicer panels, same data):** `docker compose up -d grafana` from `poc/`, then open `http://localhost:3100` (viewing needs no login; edit with `admin` / `admin`). The "Revenue Observability" dashboard has stat tiles, reply-time and message charts, the leads list, a per-lead trace (pick the lead in the dropdown), reply pairs, the message log and the raw webhook log. It reads the database through a read-only login (`db/003_readonly.sql`) and is bound to localhost only. Port 3100 avoids clashing with other apps on 3000.
+
 ## Everyday commands
 
 | Want to | Do |
@@ -93,7 +111,7 @@ Done when you see the guest's message, your reply as `staff`, and the reply time
 | Stop the app | Stop button, or `Ctrl+C` |
 | See what arrived | Task 5, or `python -m scripts.show_recent --client my-airbnb --raw` |
 | Look inside the database | `docker compose exec db psql -U revobs revobs` then e.g. `SELECT * FROM v_reply_pairs;` |
-| Run the tests | Task **Run tests** (needs a `revobs_test` database; see `tests/conftest.py`) |
+| Run the tests | Task **Run tests** (uses the `revobs_test` database inside the same Docker container) |
 | Tunnel URL changed after a restart | Update the Callback URL in Meta → Webhooks (the quick tunnel gets a new address each run) |
 | Edited `.env` | Restart the app |
 
@@ -111,4 +129,4 @@ Done when you see the guest's message, your reply as `staff`, and the reply time
 
 ## Later: moving off your laptop
 
-When this works, the same settings go into a hosted server's environment variables (never into the code), and you update the Meta webhook URL once. See the hosting notes in `docs/POC_IMPLEMENTATION.md`.
+When this works, the same settings go into a hosted server's environment variables (never into the code), and you update the Meta webhook URL once. See the hosting notes in `docs/tech/POC_IMPLEMENTATION.md`.

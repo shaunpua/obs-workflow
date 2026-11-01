@@ -74,6 +74,6 @@ def test_hot_label_for_booking_intent(client, db):
 def test_name_lookup_fills_display_name(client, db, monkeypatch):
     from app import profiles
     monkeypatch.setenv("META_PAGE_TOKEN", "tok")
-    monkeypatch.setattr(profiles, "fetch_profile", lambda psid, token: {"first_name": "Ana", "last_name": "Reyes"})
+    monkeypatch.setattr(profiles, "fetch_profile", lambda psid, token, page_id=None: {"first_name": "Ana", "last_name": "Reyes"})
     post(client, page_event(T0, mid="n1", text="hello"))   # the webhook's background task fills the name
     assert db.execute("SELECT display_name FROM leads").fetchone()["display_name"] == "Ana Reyes"

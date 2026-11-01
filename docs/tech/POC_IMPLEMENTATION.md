@@ -3,8 +3,8 @@
 This is the build guide for the clinic POC. It is written so any developer (or a smaller AI model) can pick up one milestone at a time without re-reading the whole conversation.
 
 - **Why and what:** `docs/POC_PLAN.md`
-- **What it should look like:** `docs/mockups/client-app.html` (open in a browser; fake data). Every screen below refers to a screen in that mockup.
-- **Screens, customisation and client requests:** `docs/PRODUCT_UX.md`
+- **What it should look like:** `docs/tech/mockups/client-app.html` (open in a browser; fake data). Every screen below refers to a screen in that mockup.
+- **Screens, customisation and client requests:** `docs/tech/PRODUCT_UX.md`
 - **Code:** `poc/`
 
 ---
@@ -16,7 +16,7 @@ This is the build guide for the clinic POC. It is written so any developer (or a
 | Niche | Clinics only (`poc/config/niches/clinic.yaml`) |
 | Inbox | Clinics keep replying in Meta Business Suite / WhatsApp Business app. We only listen (webhooks). No Chatwoot |
 | Dashboard data | Source-agnostic. The portal reads only our tables. Meta, booking, payments, events API and CSV are adapters that write into them |
-| Frontend | **Our own app** for the fixed screens: FastAPI + Jinja2 + HTMX, Apache ECharts for charts. **Metabase OSS** for custom panels and ad-hoc charts (milestone M4b). Grafana only for our own monitoring. See `docs/BUILD_VS_BUY.md` |
+| Frontend | **Our own app** for the fixed screens: FastAPI + Jinja2 + HTMX, Apache ECharts for charts. **Metabase OSS** for custom panels and ad-hoc charts (milestone M4b). Grafana only for our own monitoring. See `docs/tech/BUILD_VS_BUY.md` |
 | Booking capture | Use the clinic's tool if it has webhooks; else Google Calendar; else CSV; else a staff "Booked" button |
 | Database | Postgres 16. Every table has `client_id` |
 | LLM | Optional, off by default (`LLM_CLASSIFY=0`). Rules do the labelling |
@@ -44,8 +44,8 @@ Run it:
 ```bash
 cd poc
 pip install -r requirements.txt
-docker run -d --name revobs-db -e POSTGRES_USER=revobs -e POSTGRES_PASSWORD=revobs -e POSTGRES_DB=revobs -p 5432:5432 postgres:16
-export DATABASE_URL=postgresql://revobs:revobs@localhost:5432/revobs
+docker run -d --name revobs-db -e POSTGRES_USER=revobs -e POSTGRES_PASSWORD=revobs -e POSTGRES_DB=revobs -p 55432:5432 postgres:16
+export DATABASE_URL=postgresql://revobs:revobs@localhost:55432/revobs
 python -m scripts.simulate
 python -m scripts.build_dashboard --standalone
 ```
@@ -100,7 +100,7 @@ Do them in order. Each ends with something you can see. Commit after each.
 
 ### M1. Your own Facebook Page live (week 1) — code done, waiting for a live test
 
-Status: webhook receiver, signature check, dedupe, name lookup, subscribe script, `show_recent` viewer, `short_stay` niche pack (for the Airbnb Page), `my-airbnb-page.yaml` client file and 10 passing tests are in `poc/`. The remaining step is the live test by the Page owner: follow `docs/SETUP_META.md`.
+Status: webhook receiver, signature check, dedupe, name lookup, subscribe script, `show_recent` viewer, `short_stay` niche pack (for the Airbnb Page), `my-airbnb-page.yaml` client file and 10 passing tests are in `poc/`. The remaining step is the live test by the Page owner: follow `docs/tech/ops/SETUP_META.md`.
 
 Goal: a real message to your Page and your reply land in Postgres with the right reply time.
 
@@ -109,7 +109,7 @@ Tasks:
 2. Add `config/clients/<you>.yaml` (copy `demo-clinic.yaml`, put your real Page id under `channels.messenger.external_id`).
 3. Add `core/profiles.py`: on first message from a new PSID, call `GET https://graph.facebook.com/v23.0/{psid}?fields=first_name,last_name,profile_pic&access_token=<page token>` and store the name. Cache; never block the webhook on it (do it after the insert, catch errors).
 4. Add a `scripts/subscribe_page.py` helper that calls `POST /{page-id}/subscribed_apps?subscribed_fields=messages,message_echoes,messaging_referrals,message_reads`.
-5. Write `poc/docs/SETUP_META.md` with the exact clicks you did (app type, product, webhook URL via cloudflared, verify token).
+5. Write `poc/docs/tech/ops/SETUP_META.md` with the exact clicks you did (app type, product, webhook URL via cloudflared, verify token).
 
 Done when:
 - Message from your personal account → one `messages` row `direction='in'`, contact name filled.
@@ -154,7 +154,7 @@ Done when:
 
 ### M4. Portal v1 (weeks 4–5)
 
-Goal: the mockup, with real data. Copy the CSS tokens and layout from `docs/mockups/client-app.html`.
+Goal: the mockup, with real data. Copy the CSS tokens and layout from `docs/tech/mockups/client-app.html`.
 
 Screens (each a Jinja template + one query function in `portal/queries.py`):
 
@@ -224,7 +224,7 @@ Done when: a test hot lead on your Page pings your phone within 10 business minu
 - SQL lives in `db/*.sql` (schema, views) and `portal/queries.py` (screen queries). No ORM.
 - Every table and every query filters by `client_id`.
 - Times: store `timestamptz` in UTC; convert to the client's timezone only in SQL views or templates.
-- Use existing tools before writing code (see `docs/BUILD_VS_BUY.md`). Custom rules use a json-logic library.
+- Use existing tools before writing code (see `docs/tech/BUILD_VS_BUY.md`). Custom rules use a json-logic library.
 - Never block a webhook response on an external call (Graph API, LLM, Telegram).
 - Every new behaviour gets a pytest using `scripts/simulate.py` payload builders or small fixtures.
 - Don't put niche words (botox, solar) in Python. They belong in YAML.

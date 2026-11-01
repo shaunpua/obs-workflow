@@ -1,6 +1,6 @@
 """Webhook receiver + small API.
 
-Run:  uvicorn app.main:app --reload --port 8000
+Run:  uvicorn app.main:app --reload --port 8765
 """
 from __future__ import annotations
 
@@ -15,12 +15,13 @@ from fastapi import BackgroundTasks, FastAPI, Header, HTTPException, Query, Requ
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel
 
-from . import alerts, pipeline, profiles
+from . import admin, alerts, pipeline, profiles
 from .config import load_all_clients, sync_clients_to_db
 from .db import connect, migrate
 from .normalize import normalize
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
+logging.getLogger("httpx").setLevel(logging.WARNING)   # its INFO lines contain the Page token in the URL
 log = logging.getLogger("revobs")
 
 META_APP_SECRET = os.environ.get("META_APP_SECRET", "dev-secret")
@@ -30,10 +31,12 @@ if META_APP_SECRET == "dev-secret":
     log.warning("META_APP_SECRET is not set: using the insecure dev default. Set it before exposing this app.")
 
 app = FastAPI(title="Revenue Observability POC")
+admin.install_log_ring()
 conn = connect()
 migrate(conn)
 CLIENTS = load_all_clients()
 sync_clients_to_db(conn, CLIENTS)
+app.include_router(admin.make_router(conn, API_KEY))
 
 
 def _check_api_key(key: str | None):

@@ -1,0 +1,694 @@
+{
+ "uid": "revobs-main",
+ "title": "Revenue Observability",
+ "tags": [
+  "revobs"
+ ],
+ "timezone": "Asia/Manila",
+ "schemaVersion": 39,
+ "version": 1,
+ "refresh": "30s",
+ "time": {
+  "from": "now-7d",
+  "to": "now"
+ },
+ "templating": {
+  "list": [
+   {
+    "name": "lead",
+    "label": "Lead (for the trace)",
+    "type": "query",
+    "datasource": {
+     "type": "postgres",
+     "uid": "revobs-pg"
+    },
+    "refresh": 2,
+    "sort": 0,
+    "query": "SELECT COALESCE(display_name, external_user_id) || ' \u00b7 ' || left(lead_id::text,8) AS __text, lead_id::text AS __value FROM leads ORDER BY updated_at DESC",
+    "definition": "leads",
+    "current": {},
+    "options": [],
+    "includeAll": false
+   }
+  ]
+ },
+ "panels": [
+  {
+   "id": 1,
+   "type": "stat",
+   "title": "Webhooks (24h)",
+   "datasource": {
+    "type": "postgres",
+    "uid": "revobs-pg"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 0,
+    "w": 4,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "revobs-pg"
+     },
+     "format": "table",
+     "rawQuery": true,
+     "editorMode": "code",
+     "rawSql": "SELECT count(*) FROM raw_webhooks WHERE received_at > now()-interval '24 hours'"
+    }
+   ],
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "text",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 2,
+   "type": "stat",
+   "title": "Failed to process",
+   "datasource": {
+    "type": "postgres",
+    "uid": "revobs-pg"
+   },
+   "gridPos": {
+    "x": 4,
+    "y": 0,
+    "w": 4,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "revobs-pg"
+     },
+     "format": "table",
+     "rawQuery": true,
+     "editorMode": "code",
+     "rawSql": "SELECT count(*) FROM raw_webhooks WHERE error IS NOT NULL"
+    }
+   ],
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "text",
+        "value": null
+       },
+       {
+        "color": "red",
+        "value": 1
+       }
+      ]
+     }
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 3,
+   "type": "stat",
+   "title": "Bad signatures",
+   "datasource": {
+    "type": "postgres",
+    "uid": "revobs-pg"
+   },
+   "gridPos": {
+    "x": 8,
+    "y": 0,
+    "w": 4,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "revobs-pg"
+     },
+     "format": "table",
+     "rawQuery": true,
+     "editorMode": "code",
+     "rawSql": "SELECT count(*) FROM raw_webhooks WHERE signature_ok IS FALSE"
+    }
+   ],
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "text",
+        "value": null
+       },
+       {
+        "color": "red",
+        "value": 1
+       }
+      ]
+     }
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 4,
+   "type": "stat",
+   "title": "Waiting for a reply",
+   "datasource": {
+    "type": "postgres",
+    "uid": "revobs-pg"
+   },
+   "gridPos": {
+    "x": 12,
+    "y": 0,
+    "w": 4,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "revobs-pg"
+     },
+     "format": "table",
+     "rawQuery": true,
+     "editorMode": "code",
+     "rawSql": "SELECT count(*) FROM leads WHERE awaiting_reply"
+    }
+   ],
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "text",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 1
+       }
+      ]
+     }
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 5,
+   "type": "stat",
+   "title": "Median first reply (min, raw)",
+   "datasource": {
+    "type": "postgres",
+    "uid": "revobs-pg"
+   },
+   "gridPos": {
+    "x": 16,
+    "y": 0,
+    "w": 4,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "revobs-pg"
+     },
+     "format": "table",
+     "rawQuery": true,
+     "editorMode": "code",
+     "rawSql": "SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY raw_minutes) FROM v_reply_pairs WHERE is_first_response AND raw_minutes IS NOT NULL"
+    }
+   ],
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "m",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "text",
+        "value": null
+       }
+      ]
+     }
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 6,
+   "type": "stat",
+   "title": "Minutes since last webhook",
+   "datasource": {
+    "type": "postgres",
+    "uid": "revobs-pg"
+   },
+   "gridPos": {
+    "x": 20,
+    "y": 0,
+    "w": 4,
+    "h": 4
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "revobs-pg"
+     },
+     "format": "table",
+     "rawQuery": true,
+     "editorMode": "code",
+     "rawSql": "SELECT round(extract(epoch FROM now()-max(received_at))/60) FROM raw_webhooks"
+    }
+   ],
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "value"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 120
+       },
+       {
+        "color": "red",
+        "value": 1440
+       }
+      ]
+     }
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 7,
+   "type": "timeseries",
+   "title": "First reply time by day (minutes)",
+   "datasource": {
+    "type": "postgres",
+    "uid": "revobs-pg"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 4,
+    "w": 12,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "revobs-pg"
+     },
+     "format": "time_series",
+     "rawQuery": true,
+     "editorMode": "code",
+     "rawSql": "SELECT day::timestamptz AS time, client_id AS metric, frt_p50_min AS \"p50 raw\", frt_p90_min AS \"p90 raw\", frt_p50_business_min AS \"p50 in hours\" FROM v_daily_kpis WHERE $__timeFilter(day::timestamptz) ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "m"
+    },
+    "overrides": []
+   },
+   "options": {}
+  },
+  {
+   "id": 8,
+   "type": "timeseries",
+   "title": "Messages per hour",
+   "datasource": {
+    "type": "postgres",
+    "uid": "revobs-pg"
+   },
+   "gridPos": {
+    "x": 12,
+    "y": 4,
+    "w": 12,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "revobs-pg"
+     },
+     "format": "time_series",
+     "rawQuery": true,
+     "editorMode": "code",
+     "rawSql": "SELECT date_trunc('hour', sent_at) AS time, count(*) FILTER (WHERE direction='in') AS \"customer\", count(*) FILTER (WHERE direction='out') AS \"staff\" FROM messages WHERE $__timeFilter(sent_at) GROUP BY 1 ORDER BY 1"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "drawStyle": "bars",
+      "fillOpacity": 60
+     }
+    },
+    "overrides": []
+   },
+   "options": {}
+  },
+  {
+   "id": 9,
+   "type": "table",
+   "title": "Leads",
+   "description": "Copy a lead_id into the Lead dropdown at the top to see its trace below.",
+   "datasource": {
+    "type": "postgres",
+    "uid": "revobs-pg"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 12,
+    "w": 24,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "revobs-pg"
+     },
+     "format": "table",
+     "rawQuery": true,
+     "editorMode": "code",
+     "rawSql": "SELECT COALESCE(display_name, external_user_id) AS who, client_id, channel, stage, temperature, score, intent, awaiting_reply AS waiting, waiting_since, next_action, lead_id FROM leads ORDER BY updated_at DESC LIMIT 100"
+    }
+   ],
+   "options": {
+    "showHeader": true,
+    "cellHeight": "sm"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "filterable": true
+     }
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 10,
+   "type": "table",
+   "title": "Trace for selected lead",
+   "description": "",
+   "datasource": {
+    "type": "postgres",
+    "uid": "revobs-pg"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 19,
+    "w": 24,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "revobs-pg"
+     },
+     "format": "table",
+     "rawQuery": true,
+     "editorMode": "code",
+     "rawSql": "SELECT at, kind, actor, round(extract(epoch FROM at - lag(at) OVER (ORDER BY at, kind))/60, 1) AS \"min since previous\", value, detail FROM (\n  SELECT sent_at AS at, CASE WHEN direction='in' THEN 'customer_message' ELSE actor || '_reply' END AS kind, actor, NULL::numeric AS value, body AS detail FROM messages WHERE lead_id = '$lead'::uuid\n  UNION ALL SELECT occurred_at, event_type, actor, value, props::text FROM events WHERE lead_id = '$lead'::uuid) t ORDER BY at, kind"
+    }
+   ],
+   "options": {
+    "showHeader": true,
+    "cellHeight": "sm"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "filterable": true
+     }
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 11,
+   "type": "table",
+   "title": "Reply pairs (customer asks, business answers)",
+   "description": "",
+   "datasource": {
+    "type": "postgres",
+    "uid": "revobs-pg"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 27,
+    "w": 24,
+    "h": 7
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "revobs-pg"
+     },
+     "format": "table",
+     "rawQuery": true,
+     "editorMode": "code",
+     "rawSql": "SELECT asked_at, replied_at, replied_by, raw_minutes, business_minutes, is_first_response AS first, asked_in_hours AS \"in hours\", msgs_in_block FROM v_reply_pairs ORDER BY asked_at DESC LIMIT 50"
+    }
+   ],
+   "options": {
+    "showHeader": true,
+    "cellHeight": "sm"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "filterable": true
+     }
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 12,
+   "type": "table",
+   "title": "Messages log",
+   "description": "",
+   "datasource": {
+    "type": "postgres",
+    "uid": "revobs-pg"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 34,
+    "w": 24,
+    "h": 9
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "revobs-pg"
+     },
+     "format": "table",
+     "rawQuery": true,
+     "editorMode": "code",
+     "rawSql": "SELECT m.sent_at, m.client_id, COALESCE(l.display_name, l.external_user_id) AS who, m.direction, m.actor, m.body, m.app_id FROM messages m JOIN leads l USING (lead_id) ORDER BY m.sent_at DESC LIMIT 100"
+    }
+   ],
+   "options": {
+    "showHeader": true,
+    "cellHeight": "sm"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "filterable": true
+     }
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 13,
+   "type": "table",
+   "title": "Webhook log (as received)",
+   "description": "Every request from Meta, stored before processing.",
+   "datasource": {
+    "type": "postgres",
+    "uid": "revobs-pg"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 43,
+    "w": 24,
+    "h": 9
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "revobs-pg"
+     },
+     "format": "table",
+     "rawQuery": true,
+     "editorMode": "code",
+     "rawSql": "SELECT id, received_at, source, signature_ok AS \"signed ok\", processed_at IS NOT NULL AS processed, error, left(payload::text, 400) AS payload FROM raw_webhooks ORDER BY id DESC LIMIT 100"
+    }
+   ],
+   "options": {
+    "showHeader": true,
+    "cellHeight": "sm"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "filterable": true
+     }
+    },
+    "overrides": []
+   }
+  },
+  {
+   "id": 14,
+   "type": "table",
+   "title": "Open alerts",
+   "description": "",
+   "datasource": {
+    "type": "postgres",
+    "uid": "revobs-pg"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 52,
+    "w": 24,
+    "h": 5
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "postgres",
+      "uid": "revobs-pg"
+     },
+     "format": "table",
+     "rawQuery": true,
+     "editorMode": "code",
+     "rawSql": "SELECT fired_at, client_id, alert_type, message FROM alerts WHERE resolved_at IS NULL ORDER BY fired_at DESC LIMIT 20"
+    }
+   ],
+   "options": {
+    "showHeader": true,
+    "cellHeight": "sm"
+   },
+   "fieldConfig": {
+    "defaults": {
+     "custom": {
+      "filterable": true
+     }
+    },
+    "overrides": []
+   }
+  }
+ ]
+}

@@ -490,8 +490,8 @@ Cost: bots created since 5 Feb 2024 pay a monthly maintenance fee (Viber lists E
 
 No app review is needed for a Page you admin while the app is in development mode; it receives messages from people with a role on the app (you).
 
-1. Run Postgres + `uvicorn app.main:app --port 8000` (see `poc/README.md`).
-2. `cloudflared tunnel --url http://localhost:8000` → copy the https URL.
+1. Run Postgres + `uvicorn app.main:app --port 8765` (see `poc/README.md`).
+2. `cloudflared tunnel --url http://localhost:8765` → copy the https URL.
 3. developers.facebook.com → Create app (Business) → add **Messenger** ([quick start](https://developers.facebook.com/documentation/business-messaging/messenger-platform/getting-started/quick-start)).
 4. Webhook URL `https://…/webhooks/meta`, your verify token; copy the app secret into `META_APP_SECRET`.
 5. Add your Page, generate a Page token, subscribe to `messages`, `message_echoes`, `messaging_referrals`, `message_reads`.
@@ -592,9 +592,9 @@ Growth path: inline → queue + worker → cron alerts + cached views → monthl
 | A clinic system with no API | Nightly CSV export upload, matched by phone | 1 day |
 | Notebook / nothing | Offer our own booking link (self-hosted Cal.com, free) **or** a Telegram "Booked" button for staff | Hours |
 
-**Frontend decision:** our own app, not an existing dashboard tool. FastAPI + Jinja + HTMX, with Apache ECharts for charts. The clickable mockup in `docs/mockups/client-app.html` is the visual spec. Metabase OSS is added in the POC for custom panels and ad-hoc charts (we build them in its UI, no code), and Grafana only monitors our own platform. Full build-vs-buy list: `docs/BUILD_VS_BUY.md`.
+**Frontend decision:** our own app, not an existing dashboard tool. FastAPI + Jinja + HTMX, with Apache ECharts for charts. The clickable mockup in `docs/tech/mockups/client-app.html` is the visual spec. Metabase OSS is added in the POC for custom panels and ad-hoc charts (we build them in its UI, no code), and Grafana only monitors our own platform. Full build-vs-buy list: `docs/tech/BUILD_VS_BUY.md`.
 
-**Build guide:** `docs/POC_IMPLEMENTATION.md` breaks the POC into six milestones with tasks and "done when" checks.
+**Build guide:** `docs/tech/POC_IMPLEMENTATION.md` breaks the POC into six milestones with tasks and "done when" checks.
 
 **Remaining choices (smaller):**
 2. `new_journey_after_days` for clinics: 45 days?

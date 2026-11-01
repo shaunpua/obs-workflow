@@ -6,7 +6,7 @@
       "type": "debugpy",
       "request": "launch",
       "module": "uvicorn",
-      "args": ["app.main:app", "--port", "8000", "--reload"],
+      "args": ["app.main:app", "--port", "8765", "--reload"],
       "cwd": "${workspaceFolder}/poc",
       "envFile": "${workspaceFolder}/poc/.env",
       "console": "integratedTerminal"
